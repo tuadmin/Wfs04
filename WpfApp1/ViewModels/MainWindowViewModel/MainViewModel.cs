@@ -8,8 +8,8 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
 {
     public class MainViewModel : BaseViewModel
     {
-        private Visibility _isPage1 = Visibility.Collapsed;
-        private Visibility _isPage2 = Visibility.Visible;
+        private Visibility _isPage1 = Visibility.Visible;
+        private Visibility _isPage2 = Visibility.Collapsed;
         private Visibility _isOptionsPage = Visibility.Collapsed;
 
         private RelayCommand _goToPage1;
