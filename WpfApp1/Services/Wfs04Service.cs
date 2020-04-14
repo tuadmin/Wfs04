@@ -175,47 +175,54 @@ namespace WpfApp1.Services
 
         }
         
-        public static void StartFinding(PhysicalDiskItem device, string pathToVideos, DateTime start, DateTime end)
+        public static void ExtractVideos(string tableName, string fileNameOrDeviceId, string pathToVideos, DateTime start, DateTime end)
         {
-            var totalIterations = 1;
-            var number = 0;
-            // var deviceReader = new FileStream(device.DeviceId, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.Asynchronous);
-            var deviceReader = new FileStream(device.DeviceId, FileMode.Open);
-
-            var isContinue = true;
-
-            FindNextSignature(ref deviceReader);
-            while (isContinue) 
+            using var connection = new SqliteConnection(DatabaseService.ConnectionString);
+            var startTimeString = start.ToString("yyyy-MM-dd hh:mm:ss");
+            var endTimeString = end.ToString("yyyy-MM-dd hh:mm:ss");
+            var sql = $"select * from {tableName} where start_datetime >= datetime('{startTimeString}') and start_datetime <= datetime('{endTimeString}')";
+            connection.Open();
+            var reader = new SqliteCommand(sql, connection).ExecuteReader();
+            while (reader.Read())
             {
-                if ((ulong) deviceReader.Position < device.Size)
+                var item = new VideoItem()
                 {
-
-                    var timestamp = new []
-                    {
-                        (byte) deviceReader.ReadByte(), 
-                        (byte) deviceReader.ReadByte(), 
-                        (byte) deviceReader.ReadByte(),
-                        (byte) deviceReader.ReadByte()
-                    };
-                    // await deviceReader.ReadAsync(timestamp, 0, 4);
-                    var signatureDateTime = GetTimeFromSignatureTimestamp(timestamp);
-                    if (signatureDateTime >= start && signatureDateTime <= end)
-                    {
-                        WriteAndFindNextSignature(ref deviceReader, $"{pathToVideos}\\signature{Convert.ToString(number).PadLeft(8, '0')}.h264", timestamp);
-                        number++;
-                    }
-                    else
-                    {
-                        FindNextSignature(ref deviceReader);
-                        Console.WriteLine($"totalIterations: {totalIterations}");
-                        totalIterations++;
-                    }
-                }
-                else
-                {
-                    isContinue = false;
-                }
+                    Name = reader.GetString(1),
+                    Offset = reader.GetInt64(2),
+                    Size = reader.GetInt32(3),
+                    StartDateTime = reader.GetString(4)
+                };
+                using var deviceReader = new FileStream(fileNameOrDeviceId, FileMode.Open, FileAccess.Read, FileShare.None, item.Size) {Position = item.Offset};
+                using var newFileReader = File.Create(Path.Combine(pathToVideos, item.Name));
+                var buffer = new byte[item.Size];
+                deviceReader.ReadAsync(buffer, 0, item.Size);
+                newFileReader.Write(buffer);
             }
+            connection.Close();
+        }
+        
+        public static void ExtractVideos(string tableName, string fileNameOrDeviceId, string pathToVideos)
+        {
+            using var connection = new SqliteConnection(DatabaseService.ConnectionString);
+            var sql = $"select * from {tableName}";
+            connection.Open();
+            var reader = new SqliteCommand(sql, connection).ExecuteReader();
+            while (reader.Read())
+            {
+                var item = new VideoItem()
+                {
+                    Name = reader.GetString(1),
+                    Offset = reader.GetInt32(2),
+                    Size = reader.GetInt32(3),
+                    StartDateTime = reader.GetString(4)
+                };
+                using var deviceReader = new FileStream(fileNameOrDeviceId, FileMode.Open, FileAccess.Read, FileShare.None, item.Size) {Position = item.Offset};
+                using var fileReader = File.Create(Path.Combine(pathToVideos, item.Name));
+                var buffer = new byte[item.Size];
+                deviceReader.ReadAsync(buffer, 0, item.Size);
+                fileReader.Write(buffer);
+            }
+            connection.Close();
         }
 
         public static void StartFindingFromFile(string filePath, string pathToVideos, DateTime start, DateTime end)
@@ -260,67 +267,93 @@ namespace WpfApp1.Services
             }
         }
         
-        public static void StartScanFile(string filePath)
+        public static void StartScanFile(string filePath, string tableName)
         {
-            Directory.CreateDirectory(@".\output");
-            var tableName = filePath.Replace(' ', '_').Replace(":\\", "_").Replace('\\', '_').Replace('.', '_'); //.Substring(filePath.LastIndexOf('\\'))
-            using var connection = new SqliteConnection(@"Data Source=.\output\test.db");
+            using var connection = new SqliteConnection(DatabaseService.ConnectionString);
             connection.Open();
-            var tableCount = new SqliteCommand($"select count(*) from sqlite_master where type like 'table' and name like '{tableName}'", connection).ExecuteScalar();
-            if ((long) tableCount == 0)
+            
+            var deviceReader = new FileStream(filePath, FileMode.Open);
+            var isContinue = true;
+            var totalIterations = 1;
+            
+            FindNextSignature(ref deviceReader);
+            var startOfFile = deviceReader.Position - 8;
+            long startOfNext;
+            
+            while (isContinue) 
             {
-                new SqliteCommand($"create table {tableName} (id INTEGER primary key autoincrement not null, name TEXT, offset INTEGER, size INTEGER, start_datetime TEXT)", connection).ExecuteNonQuery();
-            }
-            else
-            {
-                if (DialogService.ShowConfirmDialog("Файл с таким именем уже существует. Провести повторное сканирование?"))
+                if (deviceReader.Position < deviceReader.Length)
                 {
-                    new SqliteCommand($"drop table {tableName}", connection).ExecuteNonQuery();
-                    new SqliteCommand($"create table {tableName} (id INTEGER primary key autoincrement not null, name TEXT, offset INTEGER, size INTEGER, start_datetime TEXT)", connection).ExecuteNonQuery();
-
-                    var deviceReader = new FileStream(filePath, FileMode.Open);
-                    var isContinue = true;
-                    var totalIterations = 1;
-            
-                    FindNextSignature(ref deviceReader);
-                    var startOfFile = deviceReader.Position - 8;
-                    long startOfNext;
-            
-                    while (isContinue) 
+                    var timestamp = new []
                     {
-                        if (deviceReader.Position < deviceReader.Length)
-                        {
-                            var timestamp = new []
-                            {
-                                (byte) deviceReader.ReadByte(), 
-                                (byte) deviceReader.ReadByte(), 
-                                (byte) deviceReader.ReadByte(),
-                                (byte) deviceReader.ReadByte()
-                            };
+                        (byte) deviceReader.ReadByte(), 
+                        (byte) deviceReader.ReadByte(), 
+                        (byte) deviceReader.ReadByte(),
+                        (byte) deviceReader.ReadByte()
+                    };
                     
-                            var signatureDateTime = GetTimeFromSignatureTimestamp(timestamp).ToString("yyyy-MM-dd hh:mm:ss");
-                            FindNextSignature(ref deviceReader);
-                            startOfNext = deviceReader.Position - 8;
-                            new SqliteCommand(
-                                $"insert into {tableName} (name, offset, size, start_datetime) values ('signature{totalIterations.ToString().PadLeft(8, '0')}.h264', {startOfFile}, {startOfNext-startOfFile}, '{signatureDateTime}')",
-                                connection).ExecuteNonQuery();
-                            startOfFile = startOfNext;
+                    var signatureDateTime = GetTimeFromSignatureTimestamp(timestamp).ToString("yyyy-MM-dd hh:mm:ss");
+                    FindNextSignature(ref deviceReader);
+                    startOfNext = deviceReader.Position - 8;
+                    new SqliteCommand(
+                        $"insert into {tableName} (name, offset, size, start_datetime) values ('signature{totalIterations.ToString().PadLeft(8, '0')}.h264', {startOfFile}, {startOfNext-startOfFile}, '{signatureDateTime}')",
+                        connection).ExecuteNonQuery();
+                    startOfFile = startOfNext;
 
-                            Console.WriteLine($"totalIterations: {totalIterations}");
-                            totalIterations++;
-                        }
-                        else
-                        {
-                            isContinue = false;
-                        }
-                    }
+                    Console.WriteLine($"totalIterations: {totalIterations}");
+                    totalIterations++;
+                }
+                else
+                {
+                    isContinue = false;
                 }
             }
-
-
             connection.Close();
+        }
+
+        public static void StartScanDevice(PhysicalDiskItem device, string tableName)
+        {
+            using var connection = new SqliteConnection(DatabaseService.ConnectionString);
+            connection.Open();
             
+            var deviceReader = new FileStream(device.DeviceId, FileMode.Open);
+
+            var isContinue = true;
+            var totalIterations = 1;
             
+            FindNextSignature(ref deviceReader);
+            var startOfFile = deviceReader.Position - 8;
+            long startOfNext;
+            
+            while (isContinue) 
+            {
+                if ((ulong) deviceReader.Position < device.Size)
+                {
+                    var timestamp = new []
+                    {
+                        (byte) deviceReader.ReadByte(), 
+                        (byte) deviceReader.ReadByte(), 
+                        (byte) deviceReader.ReadByte(),
+                        (byte) deviceReader.ReadByte()
+                    };
+                    
+                    var signatureDateTime = GetTimeFromSignatureTimestamp(timestamp).ToString("yyyy-MM-dd hh:mm:ss");
+                    FindNextSignature(ref deviceReader);
+                    startOfNext = deviceReader.Position - 8;
+                    new SqliteCommand(
+                        $"insert into {tableName} (name, offset, size, start_datetime) values ('signature{totalIterations.ToString().PadLeft(8, '0')}.h264', {startOfFile}, {startOfNext-startOfFile}, '{signatureDateTime}')",
+                        connection).ExecuteNonQuery();
+                    startOfFile = startOfNext;
+
+                    Console.WriteLine($"totalIterations: {totalIterations}");
+                    totalIterations++;
+                }
+                else
+                {
+                    isContinue = false;
+                }
+            }
+            connection.Close();
         }
     }
 }

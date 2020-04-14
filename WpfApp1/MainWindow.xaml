@@ -46,7 +46,7 @@
 
         </StackPanel>
 
-        <Grid Grid.Column="1" Visibility="{Binding IsPage1}" d:IsHidden="True">
+        <Grid Grid.Column="1" Visibility="{Binding IsPage1}">
             <!-- <Grid.RowDefinitions> -->
             <!--     <RowDefinition Height="200*"/> -->
             <!--     <RowDefinition Height="200*"/> -->
@@ -57,6 +57,30 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" DataContext="{Binding PageOneViewModel}">
+                <StackPanel Orientation="Horizontal">
+                    
+                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Имя проекта: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
+                            <TextBox MinWidth="150" Text="{Binding ProjectName}"/>
+                            <Button Content="Новый проект" Command="{Binding CreateNewProject}"/>
+                            <Button Content="Загрузить проект" Command="{Binding LoadProject}"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+                <ListBox Padding="5" Margin="5" ItemsSource="{Binding ProjectsList}" Name="ProjectListBox" MaxHeight="100" MinHeight="100">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectionChanged">
+                            <i:InvokeCommandAction Command="{Binding SelectedProjectChanged}" CommandParameter="{Binding ElementName=ProjectListBox, Path=SelectedItem}"/>
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="MouseDoubleClick">
+                            <i:InvokeCommandAction Command="{Binding SelectedProjectChanged}" CommandParameter="{Binding ElementName=ProjectListBox, Path=SelectedItem}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+
+
                 <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5">
                     <StackPanel>
                         <TextBlock Text="Источник данных" TextAlignment="Center" HorizontalAlignment="Center" Padding="5" FontWeight="Bold" FontSize="14"/>
@@ -100,6 +124,12 @@
                     Visibility="{Binding IsWorkWithDevice, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}"
                     DisplayMemberPath="DeviceId"
                     Margin="5"/>
+                
+                <Button Content="StartScan"
+                        Width="200"
+                        Height="30"
+                        Margin="10"
+                        Command="{Binding TestScan}"/>
 
                 <TextBlock Text="Папка в которой будут находится видеозаписи" Margin="10,20,0,0"/>
                 <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
@@ -126,7 +156,7 @@
                 </StackPanel>
 
                 <StackPanel Margin="0,20,0,0">
-                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5" Visibility="Collapsed">
+                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Text="Фильтрация по времени"/>
                             <CheckBox Margin="5,0,0,0" IsChecked="{Binding IsNeedTimeCheck}"/>
@@ -154,7 +184,7 @@
                     </StackPanel>
                 </StackPanel>
 
-                <Button Content="Start"
+                <Button Content="Extract Videos"
                         Width="200"
                         Height="30"
                         Margin="10"
@@ -162,14 +192,48 @@
 
             </StackPanel>
 
-            <TextBox Grid.Column="1"  
-                     DataContext="{Binding PageOneViewModel}" 
-                     Text="{Binding LogText, Mode=OneWay}" 
-                     IsReadOnly="True" 
-                     VerticalScrollBarVisibility="Auto"/>
+            <StackPanel Grid.Column="1" DataContext="{Binding PageOneViewModel}">
+                <DataGrid MinHeight="200" 
+                          MaxHeight="200"
+                          Margin="5" Padding="5" 
+                          ItemsSource="{Binding VideoList}" 
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
+                        <DataGridTextColumn Header="StartDate" Binding="{Binding StartDateTime}" Width="200"/>
+                        <DataGridTextColumn Header="Offset" Binding="{Binding Offset}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                
+                <Border BorderBrush="Black" BorderThickness="1" DataContext="{Binding ScanInfo}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Кол-во найденных фрагментов: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
+                            <TextBlock MinWidth="150" Text="{Binding TotalCount}"/>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Минимальная дата: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
+                            <TextBlock MinWidth="150" Text="{Binding MinDateTime}"/>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Максимальная дата: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
+                            <TextBlock MinWidth="150" Text="{Binding MaxDateTime}"/>
+                        </StackPanel>
+                    </StackPanel>    
+                </Border>
+                
+                
+                <TextBox Text="{Binding LogText, Mode=OneWay}" 
+                         IsReadOnly="True" 
+                         VerticalScrollBarVisibility="Auto"/>
+            </StackPanel>
+            
         </Grid>
 
-        <Grid Grid.Column="1" Visibility="{Binding IsPage2}">
+        <Grid Grid.Column="1" Visibility="{Binding IsPage2}" d:IsHidden="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="20*"/>

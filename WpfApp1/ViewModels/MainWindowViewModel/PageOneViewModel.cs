@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management;
-using System.Windows;
-using WpfApp1.Converters;
 using WpfApp1.Models;
 using WpfApp1.Services;
 
@@ -20,6 +18,9 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         private bool _isWorkWithDevice = true;
         private bool _isWorkWithFile = false;
         
+        private bool _isInProgress;
+        private bool _isNewProject;
+        
         private DateTime _startDate = new DateTime(2020, 01, 30, 4, 30, 0);
         private int _startTimeHours;
         private int _startTimeMinutes;
@@ -30,6 +31,11 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         private bool _isNeedTimeCheck = true;
         private string _logText;
         
+        private string _projectName = "new_project";
+        private List<string> _projectsList = new List<string>();
+        private List<VideoItem> _videoList = new List<VideoItem>();
+        private ScanInfo _scanInfo;
+        
         private RelayCommand _selectFile;
         private RelayCommand _selectFolder;
         private RelayCommand _testStart;
@@ -37,7 +43,10 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
 
         private RelayCommand _setWorkWithFile;
         private RelayCommand _setWorkWithDevice;
-        
+
+        private RelayCommand _selectedProjectChanged;
+        private RelayCommand _createNewProject;
+        private RelayCommand _loadProject;
         public List<PhysicalDiskItem> DiskList { get; }
 
 
@@ -49,6 +58,18 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                 .ToList();
             DiskList = driveInfos;
             _logText = "";
+            var directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var pathToDb = Path.Combine(directory, "Wfs04Test", "projects.sqlite");
+            var isFileExists = File.Exists(pathToDb);
+            if (!isFileExists)
+            {
+                Directory.CreateDirectory(Path.Combine(directory, "Wfs04Test"));
+                File.Create(pathToDb);
+            }
+            else
+            {
+                ProjectsList = DatabaseService.GetExistingProjects();
+            }
         }
 
         
@@ -197,8 +218,102 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                 OnPropertyChanged(nameof(LogText));
             }
         }
-        
-        
+
+        public string ProjectName
+        {
+            get => _projectName;
+            set
+            {
+                _projectName = value;
+                OnPropertyChanged(nameof(ProjectName));
+            }
+        }
+
+        public List<string> ProjectsList
+        {
+            get => _projectsList;
+            set
+            {
+                _projectsList = value;
+                OnPropertyChanged(nameof(ProjectsList));
+            }
+        }
+
+        public List<VideoItem> VideoList
+        {
+            get => _videoList;
+            set
+            {
+                _videoList = value;
+                OnPropertyChanged(nameof(VideoList));
+            }
+        }
+
+        public ScanInfo ScanInfo
+        {
+            get => _scanInfo;
+            set
+            {
+                _scanInfo = value;
+                OnPropertyChanged(nameof(ScanInfo));
+            }
+        }
+
+        public RelayCommand SelectedProjectChanged
+        {
+            get
+            {
+                return _selectedProjectChanged ??= new RelayCommand(item => { ProjectName = (string)item; }, null);
+            }
+        }
+
+        public RelayCommand CreateNewProject
+        {
+            get
+            {
+                return _createNewProject ??= new RelayCommand(_ =>
+                {
+                    if (DatabaseService.IsTableExist(ProjectName))
+                    {
+                        if (DialogService.ShowConfirmDialog("Проект с таким именем уже существует. Создание нового проекта с таким же именем приведет к удалению старого проета. Вы уверены что хотите продолжить?"))
+                        {
+                            DatabaseService.DeleteProjectTable(ProjectName);
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    _isNewProject = true;
+                    DatabaseService.CreateNewProjectTable(ProjectName);
+                    VideoList = new List<VideoItem>();
+                    ProjectsList = DatabaseService.GetExistingProjects();
+                }, _ => !string.IsNullOrWhiteSpace(ProjectName));
+            }
+        }
+
+        public RelayCommand LoadProject
+        {
+            get
+            {
+                return _loadProject ??= new RelayCommand(_ =>
+                {
+                    LogText += "LoadStart\n";
+                    if (!DatabaseService.IsTableExist(ProjectName))
+                    {
+                        DialogService.ShowMessage("Проекта с таким именем не существует");
+                        return;
+                    }
+
+                    _isNewProject = false;
+                    ScanInfo = DatabaseService.GetScanInfo(ProjectName);
+                    VideoList = DatabaseService.GetDataFromProjectTable(ProjectName);
+                    LogText += "LoadEnd\n";
+                }, _ => !string.IsNullOrWhiteSpace(ProjectName));
+            }
+        }
+
         public RelayCommand SelectFile
         {
             get
@@ -231,38 +346,41 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             {
                 return _testStart ??= new RelayCommand(_ =>
                 {
+                    if (!DatabaseService.IsTableExist(ProjectName))
+                    {
+                        DialogService.ShowMessage("Проект с таким именем не найден");
+                        return;
+                    }
                     LogText += ToString();
                     LogText += "\nStart\n\n";
 
-                    if (IsWorkWithDevice)
+                    if (IsNeedTimeCheck)
                     {
-                        Wfs04Service.StartFinding(SelectedDevice, PathToVideos,
-                            StartDate, EndDate);
-                    }
-                    else if (IsWorkWithFile)
-                    {
-                        Wfs04Service.StartFindingFromFile(PathToFileWithVideos, PathToVideos,
-                            StartDate, EndDate);
-                    }
-                    
+                        if (IsWorkWithDevice)
+                        {
+                            Wfs04Service.ExtractVideos(ProjectName, SelectedDevice.DeviceId, PathToVideos, StartDate, EndDate);
+                        }
 
+                        if (IsWorkWithFile)
+                        {
+                            Wfs04Service.ExtractVideos(ProjectName, PathToFileWithVideos, PathToVideos, StartDate, EndDate);
+                        }
+                    }
+                    else
+                    {
+                        if (IsWorkWithDevice)
+                        {
+                            Wfs04Service.ExtractVideos(ProjectName, SelectedDevice.DeviceId, PathToVideos);
+                        }
+
+                        if (IsWorkWithFile)
+                        {
+                            Wfs04Service.ExtractVideos(ProjectName, PathToFileWithVideos, PathToVideos);
+                        }
+                    }
                     LogText += "\n END!";
 
-                    /*FileStream br = new FileStream(@"\\.\PhysicalDrive3", FileMode.Open);
-                    LogText += $"\n{br.Position.ToString()}\n";
-                    var buffer = new byte[512];
-                    br.Read(buffer, 0, 512);
-                    
-                    for (int i = 0; i < 512 / 16; i++)
-                    {
-                        LogText += $"{BitConverter.ToString(buffer[(i*16)..(i*16 + 16)]).Replace('-', ' ')}\n";
-                    }
-                    
-                    LogText += $"\n{br.Position.ToString()}\n";*/
-
-                    // FileStream fileStream = new FileStream(_mainWindowModel.PathToDisk, FileMode.Open, FileAccess.Read);
-
-                }, _ => !string.IsNullOrEmpty(PathToVideos) && (SelectedDevice.Size > 0 || !string.IsNullOrEmpty(PathToFileWithVideos)));
+                }, _ => !string.IsNullOrWhiteSpace(PathToVideos) && !string.IsNullOrWhiteSpace(ProjectName) && (SelectedDevice.Size > 0 || !string.IsNullOrWhiteSpace(PathToFileWithVideos)));
             }
         }
 
@@ -272,15 +390,25 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             {
                 return _testScan ??= new RelayCommand(_ =>
                 {
+                    if (!DatabaseService.IsTableExist(ProjectName))
+                    {
+                        DialogService.ShowMessage("Проект с таким именем не найден");
+                        return;
+                    }
+                    
                     LogText += "\n Start Scan\n";
+
                     if (IsWorkWithDevice)
                     {
-                        throw new NotImplementedException("Coming soon...");
+                        Wfs04Service.StartScanDevice(SelectedDevice, ProjectName);
                     }
-                    else if (IsWorkWithFile)
+                    
+                    if (IsWorkWithFile)
                     {
-                        Wfs04Service.StartScanFile(PathToFileWithVideos);
+                        Wfs04Service.StartScanFile(PathToFileWithVideos, ProjectName);
                     }
+                    ScanInfo = DatabaseService.GetScanInfo(ProjectName);
+                    VideoList = DatabaseService.GetDataFromProjectTable(ProjectName);
 
                     LogText += "\n End Scan!";
                 }, _ => SelectedDevice.Size > 0 || !string.IsNullOrEmpty(PathToFileWithVideos));
