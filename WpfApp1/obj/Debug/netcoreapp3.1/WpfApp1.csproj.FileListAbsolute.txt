@@ -56,3 +56,4 @@ C:\Users\anyke\source\repos\WpfApp1\WpfApp1\bin\Debug\netcoreapp3.1\Microsoft.Ex
 C:\Users\anyke\source\repos\WpfApp1\WpfApp1\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Logging.Abstractions.dll
 C:\Users\anyke\source\repos\WpfApp1\WpfApp1\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Options.dll
 C:\Users\anyke\source\repos\WpfApp1\WpfApp1\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Primitives.dll
+C:\Users\anyke\source\repos\WpfApp1\WpfApp1\obj\Debug\netcoreapp3.1\App.baml

@@ -7,53 +7,73 @@
         xmlns:local="clr-namespace:WpfApp1"
         xmlns:converters="clr-namespace:WpfApp1.Converters"
         mc:Ignorable="d"
-        Title="MainWindow" MinHeight="640" MinWidth="1280">
+        Title="MainWindow" MinHeight="640" MinWidth="1280" Background="#FFD7DBE6">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="12*"/>
+            <ColumnDefinition Width="16*"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0" Background="#FF979797" IsEnabled="{Binding PageOneViewModel.IsInProgress}">
+        <StackPanel Grid.Column="0" IsEnabled="{Binding PageOneViewModel.IsInProgress}">
+            <StackPanel.Background>
+                <LinearGradientBrush EndPoint="0,1" StartPoint="-2,-1">
+                    <GradientStop Color="#FFE5E7EC"/>
+                    <GradientStop Color="#FFA1AECB" Offset="1"/>
+                </LinearGradientBrush>
+            </StackPanel.Background>
             <Button 
-                Height="50"
-                Padding="5"
-                Margin="0,5,0,5"
                 Content="Page 1"
-                Command="{Binding GoToPage1}" BorderBrush="#FF99B6EA"
-                >
-                <Button.Background>
-                    <LinearGradientBrush EndPoint="0,0" StartPoint="1,1">
-                        <GradientStop Color="#FFF7F9FD"/>
-                        <GradientStop Color="#FF99B6EA" Offset="1"/>
-                    </LinearGradientBrush>
-                </Button.Background>
+                Command="{Binding GoToPage1}" BorderBrush="#FF99B6EA">
+                <Button.Style>
+                    <Style BasedOn="{StaticResource DefaultSideButtonStyle}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsPage1}" Value="True">
+                                <Setter Property="Button.Background" Value="{StaticResource SelectedPageBackground}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
             </Button>
 
             <Button 
-                Height="30"
-                Padding="5"
-                Margin="0,5,0,5"
                 Content="Page 2"
-                Command="{Binding GoToPage2}"/>
+                Command="{Binding GoToPage2}">
+                <Button.Style>
+                    <Style BasedOn="{StaticResource DefaultSideButtonStyle}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsPage2}" Value="True">
+                                <Setter Property="Button.Background" Value="{StaticResource SelectedPageBackground}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
 
             <Button 
-                Height="30"
-                Padding="5"
-                Margin="5"
                 Content="Options"
-                Command="{Binding GoToOptions}"/>
+                Command="{Binding GoToOptions}">
+                <Button.Style>
+                    <Style BasedOn="{StaticResource DefaultSideButtonStyle}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsOptionsPage}" Value="True">
+                                <Setter Property="Button.Background" Value="{StaticResource SelectedPageBackground}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
 
             <Button 
                 Height="30"
                 Padding="5"
                 Margin="5"
                 Content="PrintDebugInfo"
+                Visibility="Collapsed"
                 Command="{Binding PrintDebugInfo}"/>
 
         </StackPanel>
 
-        <Grid Grid.Column="1" Visibility="{Binding IsPage1, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding PageOneViewModel.IsInProgress}" d:IsHidden="True">
+        <Grid Grid.Column="1" Visibility="{Binding IsPage1, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding PageOneViewModel.IsInProgress}">
             <!-- <Grid.RowDefinitions> -->
             <!--     <RowDefinition Height="200*"/> -->
             <!--     <RowDefinition Height="200*"/> -->
@@ -249,7 +269,7 @@
 
         </Grid>
 
-        <Grid Grid.Column="1" Visibility="{Binding IsPage2, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding IsInProgress}">
+        <Grid Grid.Column="1" Visibility="{Binding IsPage2, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding IsInProgress}" d:IsHidden="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="20*"/>

@@ -4,6 +4,24 @@
              xmlns:local="clr-namespace:WpfApp1"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <LinearGradientBrush EndPoint="0,0" StartPoint="1,1" x:Key="SelectedPageBackground">
+            <GradientStop Color="#FFF7F9FD"/>
+            <GradientStop Color="#FF99B6EA" Offset="1"/>
+        </LinearGradientBrush>
+        
+        <Style x:Key="DefaultSideButtonStyle">
+            <Setter Property="Button.Height" Value="40"/>
+            <Setter Property="Button.Padding" Value="5"/>
+            <Setter Property="Button.Margin" Value="0,0,0,0"/>
+            <Setter Property="Button.BorderThickness" Value="0"/>
+            <Setter Property="Button.Background" Value="Transparent"/>
+            <Setter Property="Button.FontFamily" Value="Arial"/>
+            <Setter Property="Button.FontSize" Value="14"></Setter>
+            <Style.Triggers>
+                <Trigger Property="Button.IsMouseOver" Value="True">
+                    <Setter Property="Button.FontWeight" Value="Bold"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Application.Resources>
 </Application>
