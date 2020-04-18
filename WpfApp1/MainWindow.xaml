@@ -14,19 +14,26 @@
             <ColumnDefinition Width="12*"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0" Background="#FF979797">
+        <StackPanel Grid.Column="0" Background="#FF979797" IsEnabled="{Binding PageOneViewModel.IsInProgress}">
             <Button 
-                Height="30"
+                Height="50"
                 Padding="5"
-                Margin="5"
+                Margin="0,5,0,5"
                 Content="Page 1"
-                Command="{Binding GoToPage1}"
-                />
+                Command="{Binding GoToPage1}" BorderBrush="#FF99B6EA"
+                >
+                <Button.Background>
+                    <LinearGradientBrush EndPoint="0,0" StartPoint="1,1">
+                        <GradientStop Color="#FFF7F9FD"/>
+                        <GradientStop Color="#FF99B6EA" Offset="1"/>
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
 
             <Button 
                 Height="30"
                 Padding="5"
-                Margin="5"
+                Margin="0,5,0,5"
                 Content="Page 2"
                 Command="{Binding GoToPage2}"/>
 
@@ -46,7 +53,7 @@
 
         </StackPanel>
 
-        <Grid Grid.Column="1" Visibility="{Binding IsPage1}">
+        <Grid Grid.Column="1" Visibility="{Binding IsPage1, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding PageOneViewModel.IsInProgress}" d:IsHidden="True">
             <!-- <Grid.RowDefinitions> -->
             <!--     <RowDefinition Height="200*"/> -->
             <!--     <RowDefinition Height="200*"/> -->
@@ -58,7 +65,7 @@
 
             <StackPanel Grid.Column="0" DataContext="{Binding PageOneViewModel}">
                 <StackPanel Orientation="Horizontal">
-                    
+
                     <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Имя проекта: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
@@ -124,7 +131,7 @@
                     Visibility="{Binding IsWorkWithDevice, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}"
                     DisplayMemberPath="DeviceId"
                     Margin="5"/>
-                
+
                 <Button Content="StartScan"
                         Width="200"
                         Height="30"
@@ -205,35 +212,44 @@
                         <DataGridTextColumn Header="Offset" Binding="{Binding Offset}" Width="150"/>
                     </DataGrid.Columns>
                 </DataGrid>
-                
+
                 <Border BorderBrush="Black" BorderThickness="1" DataContext="{Binding ScanInfo}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Кол-во найденных фрагментов: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
                             <TextBlock MinWidth="150" Text="{Binding TotalCount}"/>
                         </StackPanel>
-                        
+
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Минимальная дата: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
                             <TextBlock MinWidth="150" Text="{Binding MinDateTime}"/>
                         </StackPanel>
-                        
+
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Максимальная дата: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
                             <TextBlock MinWidth="150" Text="{Binding MaxDateTime}"/>
                         </StackPanel>
-                    </StackPanel>    
+                    </StackPanel>
                 </Border>
-                
-                
+
+                <StackPanel>
+                    <TextBlock Text="Прогресс" HorizontalAlignment="Center"/>
+                    <ProgressBar Height="40" Width="400" Padding="5" Margin="5" Value="{Binding ExtractProgress}"/>
+                </StackPanel>
+
+                <StackPanel Visibility="{Binding IsNeedSecondProgressBar, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}">
+                    <TextBlock Text="Прогресс распределения по камерам" HorizontalAlignment="Center"/>
+                    <ProgressBar Height="40" Width="400" Padding="5" Margin="5" Value="{Binding CamSortingProgress}"/>
+                </StackPanel>
+
                 <TextBox Text="{Binding LogText, Mode=OneWay}" 
                          IsReadOnly="True" 
                          VerticalScrollBarVisibility="Auto"/>
             </StackPanel>
-            
+
         </Grid>
 
-        <Grid Grid.Column="1" Visibility="{Binding IsPage2}" d:IsHidden="True">
+        <Grid Grid.Column="1" Visibility="{Binding IsPage2, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding IsInProgress}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="20*"/>
@@ -265,14 +281,10 @@
                     Width="140" 
                     Height="35" 
                     Margin="10"
-                    Command="{Binding CompileVideos}"/>
+                    Command="{Binding StartMergingVideos}"/>
 
-                <Button 
-                    Content="TEST Python" 
-                    Width="140" 
-                    Height="35" 
-                    Margin="10"
-                    Command="{Binding TestPython}"/>
+                <ProgressBar Height="40" Width="400" Padding="5" Margin="5" Value="{Binding MergeProgress}"/>
+
             </StackPanel>
 
             <StackPanel Grid.Row="1" Orientation="Horizontal" DataContext="{Binding PageTwoViewModel}" >
@@ -346,12 +358,9 @@
                         Source="{Binding SelectedItem.FullPath}"/>
                 </Border>
             </StackPanel>
-
-
-
         </Grid>
 
-        <Grid Grid.Column="1" Visibility="{Binding IsOptionsPage}" d:IsHidden="True">
+        <Grid Grid.Column="1" Visibility="{Binding IsOptionsPage, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" d:IsHidden="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="20*"/>
@@ -362,35 +371,36 @@
                 </Border>
             </StackPanel>
             <WrapPanel Grid.Row="1">
-                <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5" DataContext="{Binding PageOneViewModel}">
-                    <StackPanel>
-                        <TextBox Text="Источник данных" TextAlignment="Center" HorizontalAlignment="Center" Padding="5" FontWeight="Bold" FontSize="14"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Файл"/>
-                            <RadioButton Margin="5,0,0,0" Command="{Binding SetWorkWithFile}" IsChecked="{Binding IsWorkWithFile}"/>
-
-                            <TextBlock Text="Диск" Margin="10,0,0,0"/>
-                            <RadioButton Margin="5,0,0,0" Command="{Binding SetWorkWithDevice}" IsChecked="{Binding IsWorkWithDevice}"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5" DataContext="{Binding PageOneViewModel}">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Text="Фильтрация по времени"/>
-                        <CheckBox Margin="5,0,0,0" IsChecked="{Binding IsNeedTimeCheck}"/>
-                    </StackPanel>
-                </Border>
-
                 <StackPanel>
-                    <Button 
-                        Height="30"
-                        Padding="5"
-                        Margin="5"
-                        Content="TEstPython"
-                        Command="{Binding RunPython}"/>
+                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5" DataContext="{Binding PageOneViewModel}">
+                        <StackPanel>
+                            <TextBlock Text="Путь к python.exe" TextAlignment="Center" HorizontalAlignment="Center" Padding="5" FontWeight="Bold" FontSize="14"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding PathToPythonExe}"/>
+                                <Button Content="Выбрать путь" Command="{Binding SelectPythonExePath}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
-                    <ProgressBar Height="40" Width="400" Padding="5" Margin="5" Value="{Binding TestProgress}"/>
+                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5" DataContext="{Binding PageOneViewModel}">
+                        <StackPanel>
+                            <TextBlock Text="Путь к скрипту" TextAlignment="Center" HorizontalAlignment="Center" Padding="5" FontWeight="Bold" FontSize="14"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding PathToPythonScript}"/>
+                                <Button Content="Выбрать путь" Command="{Binding SelectPythonScriptPath}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5" DataContext="{Binding PageOneViewModel}">
+                        <StackPanel>
+                            <TextBlock Text="Путь к файлу результата" TextAlignment="Center" HorizontalAlignment="Center" Padding="5" FontWeight="Bold" FontSize="14"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding PathToPythonOutput}"/>
+                                <Button Content="Выбрать путь" Command="{Binding SelectPythonOutputPath}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </WrapPanel>
         </Grid>

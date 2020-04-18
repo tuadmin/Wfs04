@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Data.Sqlite;
 using WpfApp1.Models;
+using WpfApp1.ViewModels.MainWindowViewModel;
 
 namespace WpfApp1.Services
 {
@@ -175,14 +176,17 @@ namespace WpfApp1.Services
 
         }
         
-        public static void ExtractVideos(string tableName, string fileNameOrDeviceId, string pathToVideos, DateTime start, DateTime end)
+        public static void ExtractVideos(string tableName, string fileNameOrDeviceId, string pathToVideos, DateTime start, DateTime end, PageOneViewModel pageOneViewModel)
         {
             using var connection = new SqliteConnection(DatabaseService.ConnectionString);
             var startTimeString = start.ToString("yyyy-MM-dd hh:mm:ss");
             var endTimeString = end.ToString("yyyy-MM-dd hh:mm:ss");
             var sql = $"select * from {tableName} where start_datetime >= datetime('{startTimeString}') and start_datetime <= datetime('{endTimeString}')";
+            var sqlCount = $"select count(*) from {tableName} where start_datetime >= datetime('{startTimeString}') and start_datetime <= datetime('{endTimeString}')";
             connection.Open();
+            var totalCount = (long) new SqliteCommand(sqlCount, connection).ExecuteScalar();
             var reader = new SqliteCommand(sql, connection).ExecuteReader();
+            var i = 1;
             while (reader.Read())
             {
                 var item = new VideoItem()
@@ -197,16 +201,22 @@ namespace WpfApp1.Services
                 var buffer = new byte[item.Size];
                 deviceReader.ReadAsync(buffer, 0, item.Size);
                 newFileReader.Write(buffer);
+
+                pageOneViewModel.ExtractProgress = i * 100 / totalCount;
+                i++;
             }
             connection.Close();
         }
         
-        public static void ExtractVideos(string tableName, string fileNameOrDeviceId, string pathToVideos)
+        public static void ExtractVideos(string tableName, string fileNameOrDeviceId, string pathToVideos, PageOneViewModel pageOneViewModel)
         {
             using var connection = new SqliteConnection(DatabaseService.ConnectionString);
             var sql = $"select * from {tableName}";
+            var sqlCount = $"select count(*) from {tableName}";
             connection.Open();
+            var totalCount = (long) new SqliteCommand(sqlCount, connection).ExecuteScalar();
             var reader = new SqliteCommand(sql, connection).ExecuteReader();
+            var i = 1;
             while (reader.Read())
             {
                 var item = new VideoItem()
@@ -221,6 +231,9 @@ namespace WpfApp1.Services
                 var buffer = new byte[item.Size];
                 deviceReader.ReadAsync(buffer, 0, item.Size);
                 fileReader.Write(buffer);
+                
+                pageOneViewModel.ExtractProgress = i * 100 / totalCount;
+                i++;
             }
             connection.Close();
         }
@@ -267,7 +280,7 @@ namespace WpfApp1.Services
             }
         }
         
-        public static void StartScanFile(string filePath, string tableName)
+        public static void StartScanFile(string filePath, string tableName, PageOneViewModel pageOneViewModel)
         {
             using var connection = new SqliteConnection(DatabaseService.ConnectionString);
             connection.Open();
@@ -284,6 +297,7 @@ namespace WpfApp1.Services
             {
                 if (deviceReader.Position < deviceReader.Length)
                 {
+                    pageOneViewModel.ExtractProgress = deviceReader.Position * 100 / deviceReader.Length;
                     var timestamp = new []
                     {
                         (byte) deviceReader.ReadByte(), 
@@ -311,7 +325,7 @@ namespace WpfApp1.Services
             connection.Close();
         }
 
-        public static void StartScanDevice(PhysicalDiskItem device, string tableName)
+        public static void StartScanDevice(PhysicalDiskItem device, string tableName, PageOneViewModel pageOneViewModel)
         {
             using var connection = new SqliteConnection(DatabaseService.ConnectionString);
             connection.Open();
@@ -329,6 +343,7 @@ namespace WpfApp1.Services
             {
                 if ((ulong) deviceReader.Position < device.Size)
                 {
+                    pageOneViewModel.ExtractProgress = long.Parse(((ulong)deviceReader.Position * 100 / device.Size).ToString());
                     var timestamp = new []
                     {
                         (byte) deviceReader.ReadByte(), 

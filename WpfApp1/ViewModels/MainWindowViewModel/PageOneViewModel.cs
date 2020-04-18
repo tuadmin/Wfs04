@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Threading;
+using System.Threading.Tasks;
 using WpfApp1.Models;
 using WpfApp1.Services;
 
@@ -20,6 +23,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         
         private bool _isInProgress;
         private bool _isNewProject;
+        private bool _isNeedSecondProgressBar;
         
         private DateTime _startDate = new DateTime(2020, 01, 30, 4, 30, 0);
         private int _startTimeHours;
@@ -35,11 +39,24 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         private List<string> _projectsList = new List<string>();
         private List<VideoItem> _videoList = new List<VideoItem>();
         private ScanInfo _scanInfo;
-        
+
+        private long _extractProgress;
+        private long _camSortingProgress;
+        private long _scanProgress;
+
+        private string _pathToPythonExe = @"G:\Pitoni\detectCamNumber\venv\Scripts\python.exe";
+        private string _pathToPythonScript = @"G:\Pitoni\detectCamNumber\src\main.py";
+        private string _pathToPythonOutput = @"G:\Pitoni\detectCamNumber\output\result.txt";
+
         private RelayCommand _selectFile;
+        private RelayCommand _selectPythonExePath;
+        private RelayCommand _selectPythonScriptPath;
+        private RelayCommand _selectPythonOutputPath;
         private RelayCommand _selectFolder;
+        
         private RelayCommand _testStart;
         private RelayCommand _testScan;
+        private RelayCommand _testProgressBar;
 
         private RelayCommand _setWorkWithFile;
         private RelayCommand _setWorkWithDevice;
@@ -209,6 +226,26 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
+        public bool IsInProgress
+        {
+            get => !_isInProgress;
+            set
+            {
+                _isInProgress = value;
+                OnPropertyChanged(nameof(IsInProgress));
+            }
+        }
+
+        public bool IsNeedSecondProgressBar
+        {
+            get => _isNeedSecondProgressBar;
+            set
+            {
+                _isNeedSecondProgressBar = value;
+                OnPropertyChanged(nameof(IsNeedSecondProgressBar));
+            }
+        }
+
         public string LogText
         {
             get => _logText;
@@ -256,6 +293,66 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             {
                 _scanInfo = value;
                 OnPropertyChanged(nameof(ScanInfo));
+            }
+        }
+
+        public long ExtractProgress
+        {
+            get => _extractProgress;
+            set
+            {
+                _extractProgress = value;
+                OnPropertyChanged(nameof(ExtractProgress));
+            }
+        }
+
+        public long CamSortingProgress
+        {
+            get => _camSortingProgress;
+            set
+            {
+                _camSortingProgress = value;
+                OnPropertyChanged(nameof(CamSortingProgress));
+            }
+        }
+
+        public long ScanProgress
+        {
+            get => _scanProgress;
+            set
+            {
+                _scanProgress = value;
+                OnPropertyChanged(nameof(ScanProgress));
+            }
+        }
+
+        public string PathToPythonExe
+        {
+            get => _pathToPythonExe;
+            set
+            {
+                _pathToPythonExe = value;
+                OnPropertyChanged(nameof(PathToPythonExe));
+            }
+        }
+
+        public string PathToPythonScript
+        {
+            get => _pathToPythonScript;
+            set
+            {
+                _pathToPythonScript = value;
+                OnPropertyChanged(nameof(PathToPythonScript));
+            }
+        }
+
+        public string PathToPythonOutput
+        {
+            get => _pathToPythonOutput;
+            set
+            {
+                _pathToPythonOutput = value;
+                OnPropertyChanged(nameof(PathToPythonOutput));
             }
         }
 
@@ -327,6 +424,45 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
+        public RelayCommand SelectPythonExePath
+        {
+            get
+            {
+                return _selectPythonExePath ??= new RelayCommand(_ =>
+                {
+                    var filePath = DialogService.OpenFileDialog("Executable file (*.exe)|*.exe");
+                    PathToPythonExe = filePath;
+                    LogText += $"Selected filePath: '{filePath}'\n";
+                }, null);
+            }
+        }
+        
+        public RelayCommand SelectPythonScriptPath
+        {
+            get
+            {
+                return _selectPythonScriptPath ??= new RelayCommand(_ =>
+                {
+                    var filePath = DialogService.OpenFileDialog("Python script file (*.py)|*.py");
+                    PathToPythonScript = filePath;
+                    LogText += $"Selected filePath: '{filePath}'\n";
+                }, null);
+            }
+        }
+        
+        public RelayCommand SelectPythonOutputPath
+        {
+            get
+            {
+                return _selectPythonOutputPath ??= new RelayCommand(_ =>
+                {
+                    var filePath = DialogService.OpenFileDialog("Text file (*.txt)|*.txt");
+                    PathToPythonOutput = filePath;
+                    LogText += $"Selected filePath: '{filePath}'\n";
+                }, null);
+            }
+        }
+
         public RelayCommand SelectFolder
         {
             get
@@ -344,42 +480,51 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         {
             get
             {
-                return _testStart ??= new RelayCommand(_ =>
+                return _testStart ??= new RelayCommand(async _ =>
                 {
                     if (!DatabaseService.IsTableExist(ProjectName))
                     {
                         DialogService.ShowMessage("Проект с таким именем не найден");
                         return;
                     }
-                    LogText += ToString();
-                    LogText += "\nStart\n\n";
-
+                    
+                    IsNeedSecondProgressBar = true;
+                    IsInProgress = true;
+                    
                     if (IsNeedTimeCheck)
                     {
                         if (IsWorkWithDevice)
                         {
-                            Wfs04Service.ExtractVideos(ProjectName, SelectedDevice.DeviceId, PathToVideos, StartDate, EndDate);
+                            await Task.Run(() => Wfs04Service.ExtractVideos(ProjectName, SelectedDevice.DeviceId, PathToVideos, StartDate, EndDate, this));
                         }
-
+                    
                         if (IsWorkWithFile)
                         {
-                            Wfs04Service.ExtractVideos(ProjectName, PathToFileWithVideos, PathToVideos, StartDate, EndDate);
+                            await Task.Run(() => Wfs04Service.ExtractVideos(ProjectName, PathToFileWithVideos, PathToVideos, StartDate, EndDate, this));
                         }
                     }
                     else
                     {
                         if (IsWorkWithDevice)
                         {
-                            Wfs04Service.ExtractVideos(ProjectName, SelectedDevice.DeviceId, PathToVideos);
+                            await Task.Run(() => Wfs04Service.ExtractVideos(ProjectName, SelectedDevice.DeviceId, PathToVideos, this));
                         }
-
+                    
                         if (IsWorkWithFile)
                         {
-                            Wfs04Service.ExtractVideos(ProjectName, PathToFileWithVideos, PathToVideos);
+                            await Task.Run(() => Wfs04Service.ExtractVideos(ProjectName, PathToFileWithVideos, PathToVideos, this));
                         }
                     }
-                    LogText += "\n END!";
 
+                    ExtractProgress = 100;
+
+                    await Task.Run(RunScript);
+                    CamSortingProgress = 100;
+
+                    DialogService.ShowMessage("Extract ended successfully.");
+                    IsInProgress = false;
+                    ExtractProgress = 0;
+                    CamSortingProgress = 0;
                 }, _ => !string.IsNullOrWhiteSpace(PathToVideos) && !string.IsNullOrWhiteSpace(ProjectName) && (SelectedDevice.Size > 0 || !string.IsNullOrWhiteSpace(PathToFileWithVideos)));
             }
         }
@@ -388,29 +533,33 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         {
             get
             {
-                return _testScan ??= new RelayCommand(_ =>
+                return _testScan ??= new RelayCommand(async _ =>
                 {
                     if (!DatabaseService.IsTableExist(ProjectName))
                     {
                         DialogService.ShowMessage("Проект с таким именем не найден");
                         return;
                     }
-                    
-                    LogText += "\n Start Scan\n";
 
+                    IsNeedSecondProgressBar = false;
+                    IsInProgress = true;
+                    
                     if (IsWorkWithDevice)
                     {
-                        Wfs04Service.StartScanDevice(SelectedDevice, ProjectName);
+                        await Task.Run(() => Wfs04Service.StartScanDevice(SelectedDevice, ProjectName, this));
                     }
                     
                     if (IsWorkWithFile)
                     {
-                        Wfs04Service.StartScanFile(PathToFileWithVideos, ProjectName);
+                        await Task.Run(() => Wfs04Service.StartScanFile(PathToFileWithVideos, ProjectName, this));
                     }
+                    ExtractProgress = 100;
                     ScanInfo = DatabaseService.GetScanInfo(ProjectName);
                     VideoList = DatabaseService.GetDataFromProjectTable(ProjectName);
 
-                    LogText += "\n End Scan!";
+                    DialogService.ShowMessage("Scan ended successfully.");
+                    IsInProgress = false;
+                    ExtractProgress = 0;
                 }, _ => SelectedDevice.Size > 0 || !string.IsNullOrEmpty(PathToFileWithVideos));
             }
         }
@@ -435,19 +584,67 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                 IsWorkWithDevice = true;
             }, null); }
         }
-
+        
 
         public override string ToString()
         {
             return "\nPageOneViewModel:\n"
-                   + $"  Path to Disk:   {_selectedDevice.DeviceId}\n"
+                   + $"  Path to Disk (DeviceID):   {_selectedDevice.DeviceId}\n"
                    + $"  Disk Size:   {_selectedDevice.Size} (bytes)\n"
                    + $"  Disk Size (gb):   {_selectedDevice.Size / 1073741824} (gb)\n"
                    + $"  Is Need TimeCheck:   {_isNeedTimeCheck}\n"
                    + $"  Is Work with device:   {_isWorkWithDevice}\n"
-                   + $"  Path to File:   {_pathToFileWithVideos}\n"
+                   + $"  Path to File with videos:   {_pathToFileWithVideos}\n"
                    + $"  Start Date:     {_startDate}\n"
-                   + $"  End Date:       {_endDate}\n";
+                   + $"  End Date:       {_endDate}\n"
+                   + $"  Path to python.exe:       {_pathToPythonExe}\n"
+                   + $"  Path to python script:       {_pathToPythonScript}\n"
+                   + $"  Path to python output:       {_pathToPythonOutput}\n";
+        }
+        
+        private void RunScript()
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = PathToPythonExe,
+                Arguments = $"\"{PathToPythonScript}\" --i \"{PathToVideos}\" --o \"{PathToPythonOutput}\"",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true
+            };
+            var total = 100;
+            using var process = new Process {StartInfo = psi, EnableRaisingEvents = true};
+            process.OutputDataReceived += (sender, e) =>
+            {
+                if (string.IsNullOrEmpty(e.Data))
+                {
+                    return;
+                }
+
+                if (e.Data.StartsWith("total:"))
+                {
+                    Console.WriteLine(e.Data);
+                    total = int.Parse(e.Data.Substring(e.Data.IndexOf(':') + 1));
+                }
+                else
+                {
+                    Console.WriteLine(e.Data);
+                    CamSortingProgress = int.Parse(e.Data) * 100 / total ;
+                }
+
+            };
+            process.Exited += (sender, args) =>
+            {
+                Console.WriteLine("End");
+            };
+
+            process.Start();
+            Console.WriteLine("start");
+            process.BeginOutputReadLine();
+            // process.WaitForExit();
+            Console.WriteLine(process.StandardError.ReadToEnd());
         }
     }
 }
