@@ -7,7 +7,9 @@
         xmlns:local="clr-namespace:WpfApp1"
         xmlns:converters="clr-namespace:WpfApp1.Converters"
         mc:Ignorable="d"
-        Title="MainWindow" MinHeight="640" MinWidth="1280" Background="#FFD7DBE6">
+        Title="MainWindow" 
+        MinHeight="800" MinWidth="1440" 
+        Background="#FFD7DBE6">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -73,30 +75,49 @@
 
         </StackPanel>
 
-        <Grid Grid.Column="1" Visibility="{Binding IsPage1, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding PageOneViewModel.IsInProgress}">
-            <!-- <Grid.RowDefinitions> -->
-            <!--     <RowDefinition Height="200*"/> -->
-            <!--     <RowDefinition Height="200*"/> -->
-            <!-- </Grid.RowDefinitions> -->
+        <Grid Grid.Column="1" 
+              Visibility="{Binding IsPage1, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" 
+              IsEnabled="{Binding PageOneViewModel.IsInProgress}" d:IsHidden="True">
+            
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="14*"/>
                 <ColumnDefinition Width="20*"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" DataContext="{Binding PageOneViewModel}">
-                <StackPanel Orientation="Horizontal">
-
-                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Имя проекта: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
-                            <TextBox MinWidth="150" Text="{Binding ProjectName}"/>
-                            <Button Content="Новый проект" Command="{Binding CreateNewProject}"/>
-                            <Button Content="Загрузить проект" Command="{Binding LoadProject}"/>
-                        </StackPanel>
-                    </Border>
-
-                </StackPanel>
-                <ListBox Padding="5" Margin="5" ItemsSource="{Binding ProjectsList}" Name="ProjectListBox" MaxHeight="100" MinHeight="100">
+                <Border BorderThickness="0" Margin="20,10,5,5" Padding="5">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock 
+                            Style="{StaticResource TextBlockCenterAlignmentDemiBold}"
+                            Text="Имя проекта: " 
+                            Margin="0,0,5,0" 
+                            Padding="5" />
+                        <TextBox 
+                            Text="{Binding ProjectName}" 
+                            MinWidth="150" 
+                            Margin="0,0,20,0" 
+                            Padding="5" 
+                            TextAlignment="Center" 
+                            VerticalAlignment="Center" />
+                        <Button 
+                            Content="Новый проект" 
+                            Command="{Binding CreateNewProject}" 
+                            Style="{StaticResource DefaultButtonStyle}" 
+                            Padding="5" Margin="0,0,10,0" />
+                        <Button 
+                            Content="Загрузить проект" 
+                            Command="{Binding LoadProject}" 
+                            Style="{StaticResource DefaultButtonStyle}"
+                            Padding="5" Margin="0,0,10,0" />
+                    </StackPanel>
+                </Border>
+                <ListBox ItemsSource="{Binding ProjectsList}" Name="ProjectListBox" 
+                         Padding="5" 
+                         Margin="20,5,5,5"  
+                         MaxHeight="100" 
+                         MinHeight="100" 
+                         Width="250" 
+                         HorizontalAlignment="Left">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectionChanged">
                             <i:InvokeCommandAction Command="{Binding SelectedProjectChanged}" CommandParameter="{Binding ElementName=ProjectListBox, Path=SelectedItem}"/>
@@ -108,41 +129,46 @@
                 </ListBox>
 
 
-                <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5">
+                <Border Style="{StaticResource BorderOptionsStyle}">
                     <StackPanel>
-                        <TextBlock Text="Источник данных" TextAlignment="Center" HorizontalAlignment="Center" Padding="5" FontWeight="Bold" FontSize="14"/>
+                        <TextBlock 
+                            Style="{StaticResource TextBlockCenterAlignmentDemiBold}"
+                            Text="Источник данных" 
+                            Padding="5" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <TextBlock Text="Файл"/>
-                            <RadioButton Margin="5,0,0,0" Command="{Binding SetWorkWithFile}" IsChecked="{Binding IsWorkWithFile}"/>
+                            <RadioButton 
+                                Style="{StaticResource RadioButtonStyle}" 
+                                Command="{Binding SetWorkWithFile}" 
+                                IsChecked="{Binding IsWorkWithFile}"/>
 
                             <TextBlock Text="Диск" Margin="10,0,0,0"/>
-                            <RadioButton Margin="5,0,0,0" Command="{Binding SetWorkWithDevice}" IsChecked="{Binding IsWorkWithDevice}"/>
+                            <RadioButton 
+                                Style="{StaticResource RadioButtonStyle}" 
+                                Command="{Binding SetWorkWithDevice}" 
+                                IsChecked="{Binding IsWorkWithDevice}"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <StackPanel Orientation="Horizontal" 
+                <StackPanel Orientation="Horizontal"
+                            Margin="20,5,5,5"
                             Visibility="{Binding IsWorkWithFile, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}">
                     <Border 
+                        Style="{StaticResource BorderOptionsStyle}"
+                        Width="320"
                         Padding="10" 
-                        Height="57" 
-                        Width="260"
                         Margin="10"
-                        BorderBrush="Black" 
-                        BorderThickness="1,1,1,1">
+                        BorderBrush="Black">
                         <TextBlock 
-                            HorizontalAlignment="Left"
+                            Style="{StaticResource TextBlockCenterAlignment}"
                             Text="{Binding PathToFileWithVideos}" 
-                            TextWrapping="Wrap" 
-                            VerticalAlignment="Center"
-                            TextAlignment="Center"/>
+                            TextWrapping="Wrap" />
                     </Border>
                     <Button 
-                        Content="Выбрать файл" 
-                        Width="140" 
-                        Height="45" 
-                        Margin="10"
-                        Command="{Binding SelectFile}"/>
+                        Content="Выбрать файл"
+                        Style="{StaticResource DefaultButtonStyle}"
+                        Command="{Binding SelectFile}" />
                 </StackPanel>
 
                 <ComboBox 
@@ -150,76 +176,64 @@
                     SelectedItem="{Binding SelectedDevice}"
                     Visibility="{Binding IsWorkWithDevice, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}"
                     DisplayMemberPath="DeviceId"
-                    Margin="5"/>
+                    Margin="20,5,5,5" />
 
-                <Button Content="StartScan"
-                        Width="200"
-                        Height="30"
-                        Margin="10"
-                        Command="{Binding TestScan}"/>
+                
 
-                <TextBlock Text="Папка в которой будут находится видеозаписи" Margin="10,20,0,0"/>
-                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <TextBlock 
+                    Style="{StaticResource TextBlockCenterAlignmentDemiBold}"
+                    Text="Папка в которой будут находится видеозаписи" 
+                    Margin="20,20,0,0" />
+                <StackPanel Orientation="Horizontal" Margin="20,5,5,5">
                     <Border 
-                        Padding="10" 
-                        Height="57" 
-                        Width="260"
+                        Style="{StaticResource BorderOptionsStyle}"
+                        Width="320"
+                        Padding="10"
                         Margin="10"
-                        BorderBrush="Black" 
-                        BorderThickness="1,1,1,1">
+                        BorderBrush="Black">
                         <TextBlock 
-                            HorizontalAlignment="Left"
+                            Style="{StaticResource TextBlockCenterAlignment}"
                             Text="{Binding PathToVideos, UpdateSourceTrigger=PropertyChanged}" 
-                            TextWrapping="Wrap" 
-                            VerticalAlignment="Center"
-                            TextAlignment="Center"/>
+                            TextWrapping="Wrap" />
                     </Border>
                     <Button 
-                        Content="Выбрать папку" 
-                        Width="140" 
-                        Height="45" 
-                        Margin="10"
+                        Content="Выбрать папку"
+                        Style="{StaticResource DefaultButtonStyle}"
                         Command="{Binding SelectFolder}"/>
                 </StackPanel>
 
                 <StackPanel Margin="0,20,0,0">
-                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5">
+                    <Border Style="{StaticResource BorderOptionsStyle}">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Text="Фильтрация по времени"/>
-                            <CheckBox Margin="5,0,0,0" IsChecked="{Binding IsNeedTimeCheck}"/>
+                            <TextBlock Text="Фильтрация по времени" FontWeight="DemiBold" FontSize="14"/>
+                            <CheckBox Margin="5,3,0,0" IsChecked="{Binding IsNeedTimeCheck}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
 
                     <StackPanel Visibility="{Binding IsNeedTimeCheck, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}">
-                        <TextBlock Text="Дата начала" Margin="5"/>
-                        <StackPanel Orientation="Horizontal">
-                            <DatePicker Margin="10" MinWidth="180"
-                                        SelectedDate="{Binding StartDate, UpdateSourceTrigger=PropertyChanged}"
-                                        Focusable="False" FirstDayOfWeek="Monday"/>
+                        <TextBlock Text="Дата начала" Margin="20,20,0,0" FontSize="14" FontWeight="DemiBold"/>
+                        <StackPanel Orientation="Horizontal" Margin="20,5,5,5" Height="50">
+                            <DatePicker 
+                                Style="{StaticResource DatePickerStyle}"
+                                SelectedDate="{Binding StartDate, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBox Margin="10" MinWidth="50" MaxLength="2" Text="{Binding StartTimeHours, UpdateSourceTrigger=PropertyChanged}"/>
                             <TextBox Margin="10" MinWidth="50" MaxLength="2" Text="{Binding StartTimeMinutes, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
-                        <TextBlock Text="Дата конца" Margin="5"/>
-                        <StackPanel Orientation="Horizontal">
-                            <DatePicker Margin="10" MinWidth="180" 
-                                        SelectedDate="{Binding EndDate, UpdateSourceTrigger=PropertyChanged}" 
-                                        Focusable="False" FirstDayOfWeek="Monday"/>
+                        <TextBlock Text="Дата конца" Margin="20,5,0,0" FontSize="14" FontWeight="DemiBold"/>
+                        <StackPanel Orientation="Horizontal" Margin="20,5,5,5" Height="50">
+                            <DatePicker
+                                Style="{StaticResource DatePickerStyle}" 
+                                SelectedDate="{Binding EndDate, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBox Margin="10" MinWidth="50" MaxLength="2" Text="{Binding EndTimeHours, UpdateSourceTrigger=PropertyChanged}"/>
                             <TextBox Margin="10" MinWidth="50" MaxLength="2" Text="{Binding EndTimeMinutes, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
 
-                <Button Content="Extract Videos"
-                        Width="200"
-                        Height="30"
-                        Margin="10"
-                        Command="{Binding TestStart}"/>
-
             </StackPanel>
 
-            <StackPanel Grid.Column="1" DataContext="{Binding PageOneViewModel}">
+            <StackPanel Grid.Column="1" DataContext="{Binding PageOneViewModel}" Margin="20,10,20,10">
                 <DataGrid MinHeight="200" 
                           MaxHeight="200"
                           Margin="5" Padding="5" 
@@ -233,43 +247,76 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <Border BorderBrush="Black" BorderThickness="1" DataContext="{Binding ScanInfo}">
+                <Border Style="{StaticResource BorderOptionsStyle}" Margin="20,10,20,10" DataContext="{Binding ScanInfo}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Кол-во найденных фрагментов: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
-                            <TextBlock MinWidth="150" Text="{Binding TotalCount}"/>
+                            <TextBlock
+                                Style="{StaticResource TextBlockCenterAlignment}"
+                                Text="Кол-во найденных фрагментов: "
+                                Padding="5" />
+                            <TextBlock
+                                Style="{StaticResource TextBlockCenterAlignment}"
+                                Text="{Binding TotalCount}"
+                                MinWidth="150" />
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Минимальная дата: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
-                            <TextBlock MinWidth="150" Text="{Binding MinDateTime}"/>
+                            <TextBlock
+                                Style="{StaticResource TextBlockCenterAlignment}"
+                                Text="Минимальная дата: "
+                                Padding="5" />
+                            <TextBlock
+                                Style="{StaticResource TextBlockCenterAlignment}"
+                                Text="{Binding MinDateTime}"
+                                MinWidth="150" />
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Максимальная дата: " TextAlignment="Center" HorizontalAlignment="Center" Padding="5"/>
-                            <TextBlock MinWidth="150" Text="{Binding MaxDateTime}"/>
+                            <TextBlock
+                                Style="{StaticResource TextBlockCenterAlignment}"
+                                Text="Максимальная дата: "
+                                Padding="5" />
+                            <TextBlock
+                                Style="{StaticResource TextBlockCenterAlignment}"
+                                Text="{Binding MaxDateTime}"
+                                MinWidth="150" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
+                
+                <StackPanel Orientation="Horizontal" Margin="20,10,20,10" HorizontalAlignment="Center">
+                    <Button
+                        Style="{StaticResource ActionButtonStyle}"
+                        Content="StartScan"
+                        Command="{Binding TestScan}" />
+                
+                    <Button
+                        Style="{StaticResource ActionButtonStyle}"
+                        Content="Extract Videos"
+                        Command="{Binding TestStart}"/>
+                </StackPanel>
+                
 
                 <StackPanel>
-                    <TextBlock Text="Прогресс" HorizontalAlignment="Center"/>
-                    <ProgressBar Height="40" Width="400" Padding="5" Margin="5" Value="{Binding ExtractProgress}"/>
+                    <TextBlock Text="Прогресс" HorizontalAlignment="Center" FontSize="14" FontWeight="DemiBold"/>
+                    <ProgressBar Style="{StaticResource ProgressBarStyle}" Value="{Binding ExtractProgress}"/>
                 </StackPanel>
 
                 <StackPanel Visibility="{Binding IsNeedSecondProgressBar, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}">
-                    <TextBlock Text="Прогресс распределения по камерам" HorizontalAlignment="Center"/>
-                    <ProgressBar Height="40" Width="400" Padding="5" Margin="5" Value="{Binding CamSortingProgress}"/>
+                    <TextBlock Text="Прогресс распределения по камерам" HorizontalAlignment="Center" FontSize="14" FontWeight="DemiBold"/>
+                    <ProgressBar Style="{StaticResource ProgressBarStyle}" Value="{Binding CamSortingProgress}"/>
                 </StackPanel>
 
-                <TextBox Text="{Binding LogText, Mode=OneWay}" 
-                         IsReadOnly="True" 
-                         VerticalScrollBarVisibility="Auto"/>
+                <TextBox
+                    Visibility="Collapsed"
+                    Text="{Binding LogText, Mode=OneWay}" 
+                    IsReadOnly="True" 
+                    VerticalScrollBarVisibility="Auto"/>
             </StackPanel>
 
         </Grid>
 
-        <Grid Grid.Column="1" Visibility="{Binding IsPage2, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding IsInProgress}" d:IsHidden="True">
+        <Grid Grid.Column="1" Visibility="{Binding IsPage2, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding IsInProgress}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="20*"/>
@@ -278,8 +325,8 @@
                 <Border 
                     Padding="5" 
                     Height="30" 
-                    Width="260"
-                    Margin="10"
+                    Width="300"
+                    Margin="20,10,10,10"
                     BorderBrush="Black" 
                     BorderThickness="1">
                     <TextBlock 
@@ -290,28 +337,29 @@
                         TextAlignment="Center"/>
                 </Border>
                 <Button 
+                    Style="{StaticResource DefaultButtonStyle}"
                     Content="Выбрать папку" 
-                    Width="140" 
-                    Height="35" 
-                    Margin="10"
+                    Width="140"
                     Command="{Binding SelectFolder}"/>
 
                 <Button 
+                    Style="{StaticResource ActionButtonStyle}"
                     Content="Склеить видео" 
-                    Width="140" 
-                    Height="35" 
-                    Margin="10"
+                    Width="140"
                     Command="{Binding StartMergingVideos}"/>
 
-                <ProgressBar Height="40" Width="400" Padding="5" Margin="5" Value="{Binding MergeProgress}"/>
+                <ProgressBar
+                    Style="{StaticResource ProgressBarStyle}" 
+                    Value="{Binding MergeProgress}"
+                    Margin="10" />
 
             </StackPanel>
 
             <StackPanel Grid.Row="1" Orientation="Horizontal" DataContext="{Binding PageTwoViewModel}" >
-                <TreeView Margin="10" MinWidth="300"
+                <TreeView Margin="20,10,10,10" MinWidth="300"
                       ItemsSource="{Binding Items}"
                       AllowDrop="True"
-                      Name="FilesView">
+                      Name="FilesView" Background="#FFD7DBE6">
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="{x:Type TreeViewItem}">
                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
@@ -364,12 +412,10 @@
                 </TreeView>
 
                 <Border 
-                    BorderThickness="1,1,1,1" 
-                    BorderBrush="Black" 
+                    Style="{StaticResource BorderOptionsStyle}" 
                     MinWidth="600"
                     MaxWidth="860"
-                    Padding="5"
-                    Margin="10">
+                    Margin="10" >
                     <MediaElement
                         ScrubbingEnabled="True"
                         Stretch="Fill"
@@ -385,39 +431,50 @@
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="20*"/>
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0">
-                <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5">
-                    <TextBox Text="Настройки" TextAlignment="Center" HorizontalAlignment="Center" FontSize="16"/>
-                </Border>
+            <StackPanel x:Name="HeadStackPanel" Grid.Row="0">
+                <TextBlock Text="Настройки" TextAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Margin="0,10,0,5"/>
+                <Line Stroke="#FF6F7990" HorizontalAlignment="Stretch" StrokeThickness="1" X2="{Binding ActualWidth, ElementName=HeadStackPanel, Mode=OneWay}"  />
             </StackPanel>
             <WrapPanel Grid.Row="1">
                 <StackPanel>
-                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5" DataContext="{Binding PageOneViewModel}">
+                    <Border Style="{StaticResource BorderOptionsStyle}" DataContext="{Binding PageOneViewModel}">
                         <StackPanel>
                             <TextBlock Text="Путь к python.exe" TextAlignment="Center" HorizontalAlignment="Center" Padding="5" FontWeight="Bold" FontSize="14"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding PathToPythonExe}"/>
-                                <Button Content="Выбрать путь" Command="{Binding SelectPythonExePath}"/>
+                                <TextBlock Text="{Binding PathToPythonExe}" Style="{StaticResource TextBlockOptionsStyle}"/>
+                                <Button 
+                                    Style="{StaticResource DefaultButtonStyle}"
+                                    Content="Выбрать путь" 
+                                    Command="{Binding SelectPythonExePath}"
+                                    Margin="5,0,5,0" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5" DataContext="{Binding PageOneViewModel}">
+                    <Border Style="{StaticResource BorderOptionsStyle}" DataContext="{Binding PageOneViewModel}">
                         <StackPanel>
                             <TextBlock Text="Путь к скрипту" TextAlignment="Center" HorizontalAlignment="Center" Padding="5" FontWeight="Bold" FontSize="14"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding PathToPythonScript}"/>
-                                <Button Content="Выбрать путь" Command="{Binding SelectPythonScriptPath}"/>
+                                <TextBlock Text="{Binding PathToPythonScript}" Style="{StaticResource TextBlockOptionsStyle}"/>
+                                <Button 
+                                    Style="{StaticResource DefaultButtonStyle}"
+                                    Content="Выбрать путь" 
+                                    Command="{Binding SelectPythonScriptPath}"
+                                    Margin="5,0,5,0" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <Border BorderThickness="1" BorderBrush="Black" Margin="5" Padding="5" DataContext="{Binding PageOneViewModel}">
+                    <Border Style="{StaticResource BorderOptionsStyle}" DataContext="{Binding PageOneViewModel}">
                         <StackPanel>
                             <TextBlock Text="Путь к файлу результата" TextAlignment="Center" HorizontalAlignment="Center" Padding="5" FontWeight="Bold" FontSize="14"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding PathToPythonOutput}"/>
-                                <Button Content="Выбрать путь" Command="{Binding SelectPythonOutputPath}"/>
+                                <TextBlock Text="{Binding PathToPythonOutput}" Style="{StaticResource TextBlockOptionsStyle}"/>
+                                <Button 
+                                    Style="{StaticResource DefaultButtonStyle}"
+                                    Content="Выбрать путь" 
+                                    Command="{Binding SelectPythonOutputPath}"
+                                    Margin="5,0,5,0" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
