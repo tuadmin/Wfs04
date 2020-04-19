@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using WpfApp1.Services;
 using WpfApp1.ViewModels.DirectoryViewModel;
 
@@ -14,13 +15,12 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         private ObservableCollection<DirectoryItemViewModel> _items;
         private DirectoryItemViewModel _selectedItem;
 
+        private bool _isInProgress;
+        private long _mergeProgress;
+
         private RelayCommand _selectFolder;
-        private RelayCommand _compileVideos;
+        private RelayCommand _startMergingVideos;
         private RelayCommand _onSelectedItemChange;
-
-        private RelayCommand _testPython;
-
-        public string TEST = "E:\\wfs0.4 test\\videosTest2\\signature1.h264";
         
         public string RootPath
         {
@@ -52,6 +52,26 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
+        public bool IsInProgress
+        {
+            get => !_isInProgress;
+            set
+            {
+                _isInProgress = value;
+                OnPropertyChanged(nameof(IsInProgress));
+            }
+        }
+
+        public long MergeProgress
+        {
+            get => _mergeProgress;
+            set
+            {
+                _mergeProgress = value;
+                OnPropertyChanged(nameof(MergeProgress));
+            }
+        }
+
         public RelayCommand SelectFolder
         {
             get
@@ -78,73 +98,24 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
-        public RelayCommand CompileVideos
+        public RelayCommand StartMergingVideos
         {
             get
             {
-                return _compileVideos ??= new RelayCommand(_ =>
+                return _startMergingVideos ??= new RelayCommand(async _ =>
                 {
-                    var directoryInfo = new DirectoryInfo(RootPath);
-                    var directories = directoryInfo.GetDirectories();
-                    foreach (var dir in directories)
-                    {
-                        var files = dir.GetFiles();
-                        if (files.Length > 1)
-                        {
-                            var fs = new FileStream($@"{dir.FullName}\mainFile.h264", FileMode.Create);
-                            foreach (var fileInfo in files)
-                            {
-                                var fileRead = fileInfo.OpenRead();
-                                var buffer = new byte[fileRead.Length];
-                                
-                                fileRead.Read(buffer);
-                                fs.Write(buffer);
-                                fileRead.Close();
-                                // fileInfo.Delete();
-                            }
-                            fs.Close();
-                        }
-                    }
-                    Console.WriteLine("Video Compile End");
+                    IsInProgress = true;
+                    await Task.Run(MergingVideos);
+                    MergeProgress = 100;
+                    DialogService.ShowMessage("Video merging successfully ended");
+                    IsInProgress = false;
+                    MergeProgress = 0;
+                    Items = new ObservableCollection<DirectoryItemViewModel>(
+                        DirectoryStructureService.GetDirectoryContent(RootPath)
+                            .Select(item => new DirectoryItemViewModel(item.FullPath, item.Type))
+                    );
                 }, _ =>
                 {
-                    if (RootPath == null)
-                    {
-                        return false;
-                    }
-                    var directoryInfo = new DirectoryInfo(RootPath);
-                    return directoryInfo.Exists && directoryInfo.GetDirectories().Length > 0;
-                });
-            }
-        }
-
-        public RelayCommand TestPython
-        {
-            get
-            {
-                return _testPython ??= new RelayCommand(_ =>
-                {
-                    var scriptPath = @"G:\Pitoni\detectCamNumber\src\main.py";
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = @"G:\Pitoni\detectCamNumber\venv\Scripts\python.exe",
-                        Arguments = $"{scriptPath} --i \"{RootPath}\" --o G:\\Pitoni\\detectCamNumber\\output\\result.txt",
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                        RedirectStandardError = true,
-                        RedirectStandardOutput = true
-                    };
-
-                    using var process = Process.Start(psi);
-                    using var reader = process.StandardOutput;
-                    
-                    var errors = process.StandardError.ReadToEnd();
-                    
-                    var result = reader.ReadToEnd();
-                    
-                    Console.WriteLine($"errors: {errors}");
-                    Console.WriteLine($"result: {result}");
-                }, _ => {
                     if (RootPath == null)
                     {
                         return false;
@@ -160,6 +131,41 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             return "PageTwoViewModel: \n" 
                    + $"  Path:   {_rootPath}\n"
                    + $"  SelectedItem: {_selectedItem}\n";
+        }
+
+        public void MergingVideos()
+        {
+            var directoryInfo = new DirectoryInfo(RootPath);
+            var directories = directoryInfo.GetDirectories();
+            var totalCount = directories.Select(item => item.GetFiles().Count(item => item.Name.EndsWith("h264"))).Sum();
+
+            var i = 1;
+            foreach (var dir in directories)
+            {
+                var files = dir.GetFiles().Where(item => item.Name.EndsWith("h264")).ToList();
+                if (files.Count > 1)
+                {
+                    using var fs = new FileStream($@"{dir.FullName}\mainFile.h264", FileMode.Create);
+                    foreach (var fileInfo in files)
+                    {
+                        if (!fileInfo.Name.EndsWith("h264"))
+                        {
+                            continue;
+                        }
+                        using var fileRead = fileInfo.OpenRead();
+                        var buffer = new byte[fileRead.Length];
+                                
+                        fileRead.Read(buffer);
+                        fs.Write(buffer);
+                        fileRead.Close();
+                        // fileInfo.Delete();
+
+                        MergeProgress = i * 100 / totalCount;
+                        i++;
+                    }
+                    fs.Close();
+                }
+            }
         }
     }
 }

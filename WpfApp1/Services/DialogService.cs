@@ -30,6 +30,18 @@ namespace WpfApp1.Services
             };
             return fileDialog.ShowDialog() == true ? fileDialog.FileName : "Choose file";
         }
+        
+        public static string OpenFileDialog(string filterString)
+        {
+            var fileDialog = new OpenFileDialog
+            {
+                Multiselect = false,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Filter = filterString
+            };
+            return fileDialog.ShowDialog() == true ? fileDialog.FileName : "Choose file";
+        }
 
         public static string OpenFolderDialog()
         {
