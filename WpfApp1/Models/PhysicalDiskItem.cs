@@ -7,6 +7,8 @@
             DeviceId = id;
             Size = size;
         }
+
+        public PhysicalDiskItem() {}
         
         public string DeviceId { get;}
 

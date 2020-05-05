@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+﻿using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -52,9 +50,10 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
+        public bool IsNotInProgress => !_isInProgress;
         public bool IsInProgress
         {
-            get => !_isInProgress;
+            get => _isInProgress;
             set
             {
                 _isInProgress = value;

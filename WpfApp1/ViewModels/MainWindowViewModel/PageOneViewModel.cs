@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
-using System.Threading;
 using System.Threading.Tasks;
 using WpfApp1.Models;
 using WpfApp1.Services;
@@ -26,16 +25,16 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         private bool _isNeedSecondProgressBar;
         
         private DateTime _startDate = new DateTime(2020, 01, 30, 4, 30, 0);
-        private int _startTimeHours;
-        private int _startTimeMinutes;
+        private int _startTimeHours = 4;
+        private int _startTimeMinutes = 30;
         private DateTime _endDate = new DateTime(2020, 01, 30, 4, 35, 0);
-        private int _endTimeHours;
-        private int _endTimeMinutes;
+        private int _endTimeHours = 4;
+        private int _endTimeMinutes = 35;
         
         private bool _isNeedTimeCheck = true;
         private string _logText;
         
-        private string _projectName = "new_project";
+        private string _projectName;
         private List<string> _projectsList = new List<string>();
         private List<VideoItem> _videoList = new List<VideoItem>();
         private ScanInfo _scanInfo;
@@ -64,6 +63,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         private RelayCommand _selectedProjectChanged;
         private RelayCommand _createNewProject;
         private RelayCommand _loadProject;
+        private RelayCommand _deleteProject;
         public List<PhysicalDiskItem> DiskList { get; }
 
 
@@ -124,27 +124,22 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
-        public string StartTimeHours
+        public string StartTime
         {
-            get => $"{_startDate.Hour}";
+            get => _startDate.ToString("hh:mm");
             set
             {
-                int.TryParse(value, out var temp);
-                _startTimeHours = temp > 23 ? _startTimeHours : temp;
-                _startDate = new DateTime(_startDate.Year, _startDate.Month, _startDate.Day, _startTimeHours, _startTimeMinutes, 0);
-                OnPropertyChanged(nameof(StartTimeHours));
-            }
-        }
-
-        public string StartTimeMinutes
-        {
-            get => $"{_startDate.Minute}";
-            set
-            {
-                int.TryParse(value, out var temp);
-                _startTimeMinutes = temp > 59 ? _startTimeMinutes : temp;
-                _startDate = new DateTime(_startDate.Year, _startDate.Month, _startDate.Day, _startTimeHours, _startTimeMinutes, 0);
-                OnPropertyChanged(nameof(StartTimeMinutes));
+                var items = value.Split(':');
+                int.TryParse(items[0], out var tempHours);
+                int.TryParse(items[1], out var tempMinutes);
+                var tempDate = new DateTime(_startDate.Year, _startDate.Month, _startDate.Day, tempHours, tempMinutes, 0);
+                if (tempDate <= _endDate)
+                {
+                    _startTimeHours = tempHours;
+                    _startTimeMinutes = tempMinutes;
+                    _startDate = tempDate;
+                }
+                
             }
         }
 
@@ -162,27 +157,21 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
-        public string EndTimeHours
+        public string EndTime
         {
-            get => $"{_endDate.Hour}";
+            get => _endDate.ToString("hh:mm");
             set
             {
-                int.TryParse(value, out var temp);
-                _endTimeHours = temp > 23 ? _endTimeHours : temp;
-                _endDate = new DateTime(_endDate.Year, _endDate.Month, _endDate.Day, _endTimeHours, _endTimeMinutes, 0);
-                OnPropertyChanged(nameof(EndTimeHours));
-            }
-        }
-
-        public string EndTimeMinutes
-        {
-            get => $"{_endDate.Minute}";
-            set
-            {
-                int.TryParse(value, out var temp);
-                _endTimeMinutes = temp > 59 ? _endTimeMinutes : temp;
-                _endDate = new DateTime(_endDate.Year, _endDate.Month, _endDate.Day, _endTimeHours, _endTimeMinutes, 0);
-                OnPropertyChanged(nameof(EndTimeMinutes));
+                var items = value.Split(':');
+                int.TryParse(items[0], out var tempHours);
+                int.TryParse(items[1], out var tempMinutes);
+                var tempDate =  new DateTime(_endDate.Year, _endDate.Month, _endDate.Day, tempHours, tempMinutes, 0);
+                if (tempDate >= _startDate)
+                {
+                    _endTimeHours = tempHours;
+                    _endTimeMinutes = tempMinutes;
+                    _endDate = tempDate;
+                }
             }
         }
 
@@ -226,9 +215,10 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
+        public bool IsNotInProgress => !_isInProgress;
         public bool IsInProgress
         {
-            get => !_isInProgress;
+            get => _isInProgress;
             set
             {
                 _isInProgress = value;
@@ -411,6 +401,20 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
+        public RelayCommand DeleteProject
+        {
+            get
+            {
+                return _deleteProject ??= new RelayCommand(_ =>
+                {
+                    if (!DatabaseService.IsTableExist(ProjectName)) return;
+                    if (!DialogService.ShowConfirmDialog("Вы уверены что хотите удалить проект?")) return;
+                    DatabaseService.DeleteProjectTable(ProjectName);
+                    ProjectsList = DatabaseService.GetExistingProjects();
+                }, _ => !string.IsNullOrWhiteSpace(ProjectName));
+            }
+        }
+
         public RelayCommand SelectFile
         {
             get
@@ -572,6 +576,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                 {
                     IsWorkWithDevice = false;
                     IsWorkWithFile = true;
+                    SelectedDevice = new PhysicalDiskItem();
                 }, null);
             }
         }
@@ -582,6 +587,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             {
                 IsWorkWithFile = false;
                 IsWorkWithDevice = true;
+                PathToFileWithVideos = null;
             }, null); }
         }
         
@@ -599,7 +605,8 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                    + $"  End Date:       {_endDate}\n"
                    + $"  Path to python.exe:       {_pathToPythonExe}\n"
                    + $"  Path to python script:       {_pathToPythonScript}\n"
-                   + $"  Path to python output:       {_pathToPythonOutput}\n";
+                   + $"  Path to python output:       {_pathToPythonOutput}\n"
+                   + $"  Project name:       {_projectName}\n";
         }
         
         private void RunScript()
