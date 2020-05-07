@@ -53,7 +53,8 @@
                     Margin="0 16 0 0">
             
             <Button IsDefault="True"
-                    Content="Принять"
+                    Content="{Binding YesButtonContent}"
+                    Visibility="{Binding OnlyNo, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}"
                     Style="{DynamicResource MaterialDesignFlatButton}"
                     Command="{x:Static wpf:DialogHost.CloseDialogCommand}">
                 <Button.CommandParameter>
@@ -63,8 +64,7 @@
             
             <Button IsCancel="True"
                     Margin="24 0 0 0"
-                    Content="Отменить"
-                    Visibility="{Binding OnlyYes, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}"
+                    Content="{Binding NoButtonContent}"
                     Style="{DynamicResource MaterialDesignFlatButton}"
                     Command="{x:Static wpf:DialogHost.CloseDialogCommand}">
                 <Button.CommandParameter>

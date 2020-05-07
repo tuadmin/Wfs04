@@ -12,8 +12,8 @@ namespace WpfApp1.Services
         private static readonly string DEFAULT_TITLE = "Предупреждение";
         private static readonly string DEFAULT_YES_CONTENT = "Применить";
         private static readonly string DEFAULT_NO_CONTENT = "Отменить";
-        private static string DEFAULT_ONLY_YES_BUTTON_CONTENT = "Закрыть";
-        private static readonly bool DEFAULT_ONLY_YES = false;
+        private static string DEFAULT_ONLY_NO_BUTTON_CONTENT = "Закрыть";
+        private static readonly bool DEFAULT_ONLY_NO = false;
         
         public static async Task<bool> ShowConfirmDialog(string message)
         {
@@ -23,7 +23,7 @@ namespace WpfApp1.Services
                 {
                     Message = message, 
                     Title = DEFAULT_TITLE,
-                    OnlyYes = DEFAULT_ONLY_YES,
+                    OnlyNo = DEFAULT_ONLY_NO,
                     YesButtonContent = DEFAULT_YES_CONTENT,
                     NoButtonContent = DEFAULT_NO_CONTENT
                 }
@@ -42,7 +42,7 @@ namespace WpfApp1.Services
                 {
                     Message = message, 
                     Title = title,
-                    OnlyYes = DEFAULT_ONLY_YES,
+                    OnlyNo = DEFAULT_ONLY_NO,
                     YesButtonContent = DEFAULT_YES_CONTENT,
                     NoButtonContent = DEFAULT_NO_CONTENT
                 }
@@ -53,7 +53,7 @@ namespace WpfApp1.Services
             return (bool) result;
         }
         
-        public static async Task<bool> ShowConfirmDialog(string message, string title, bool onlyYes)
+        public static async Task<bool> ShowConfirmDialog(string message, string title, bool onlyNo)
         {
             var view = new ConfirmDialog
             {
@@ -61,9 +61,9 @@ namespace WpfApp1.Services
                 {
                     Message = message, 
                     Title = title,
-                    OnlyYes = onlyYes,
-                    YesButtonContent = onlyYes ? DEFAULT_ONLY_YES_BUTTON_CONTENT : DEFAULT_YES_CONTENT,
-                    NoButtonContent = DEFAULT_NO_CONTENT
+                    OnlyNo = onlyNo,
+                    YesButtonContent = DEFAULT_YES_CONTENT,
+                    NoButtonContent = onlyNo ? DEFAULT_ONLY_NO_BUTTON_CONTENT : DEFAULT_NO_CONTENT
                 }
             };
 
@@ -71,7 +71,7 @@ namespace WpfApp1.Services
 
             return (bool) result;
         }
-        public static async Task<bool> ShowConfirmDialog(string message, string title, bool onlyYes, string yesContent)
+        public static async Task<bool> ShowConfirmDialog(string message, string title, bool onlyNo, string yesContent)
         {
             var view = new ConfirmDialog
             {
@@ -79,7 +79,7 @@ namespace WpfApp1.Services
                 {
                     Message = message, 
                     Title = title,
-                    OnlyYes = onlyYes,
+                    OnlyNo = onlyNo,
                     YesButtonContent = yesContent,
                     NoButtonContent = DEFAULT_NO_CONTENT
                 }
@@ -90,7 +90,7 @@ namespace WpfApp1.Services
             return (bool) result;
         }
         
-        public static async Task<bool> ShowConfirmDialog(string message, string title, bool onlyYes, string yesContent, string noContent)
+        public static async Task<bool> ShowConfirmDialog(string message, string title, bool onlyNo, string yesContent, string noContent)
         {
             var view = new ConfirmDialog
             {
@@ -98,7 +98,7 @@ namespace WpfApp1.Services
                 {
                     Message = message, 
                     Title = title,
-                    OnlyYes = onlyYes,
+                    OnlyNo = onlyNo,
                     YesButtonContent = yesContent,
                     NoButtonContent = noContent
                 }
@@ -117,7 +117,7 @@ namespace WpfApp1.Services
                 {
                     Message = message, 
                     Title = title,
-                    OnlyYes = DEFAULT_ONLY_YES,
+                    OnlyNo = DEFAULT_ONLY_NO,
                     YesButtonContent = yesContent,
                     NoButtonContent = noContent
                 }
@@ -139,7 +139,7 @@ namespace WpfApp1.Services
                 //TODO: delete this
                 InitialDirectory = @"E:\wfs0.4 test"
             };
-            return fileDialog.ShowDialog() == true ? fileDialog.FileName : "Choose file";
+            return fileDialog.ShowDialog() == true ? fileDialog.FileName : null;
         }
         
         public static string OpenFileDialog(string filterString)
@@ -151,7 +151,7 @@ namespace WpfApp1.Services
                 CheckPathExists = true,
                 Filter = filterString
             };
-            return fileDialog.ShowDialog() == true ? fileDialog.FileName : "Choose file";
+            return fileDialog.ShowDialog() == true ? fileDialog.FileName : null;
         }
 
         public static string OpenFolderDialog()
@@ -165,7 +165,7 @@ namespace WpfApp1.Services
                 InitialDirectory = @"E:\wfs0.4 test"
             };
 
-            return dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : "Choose Folder";
+            return dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null;
         }
     }
 }

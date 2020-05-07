@@ -4,6 +4,7 @@ namespace WpfApp1.Components.ConfirmDialog
 {
     public class ConfirmDialogViewModel : BaseViewModel
     {
+        private bool _onlyNo;
         public string Title { get; set; }
         public string Message { get; set; }
         
@@ -11,6 +12,14 @@ namespace WpfApp1.Components.ConfirmDialog
         
         public string NoButtonContent { get; set; }
 
-        public bool OnlyYes { get; set; }
+        public bool OnlyNo
+        {
+            get => !_onlyNo;
+            set
+            {
+                _onlyNo = value;
+                OnPropertyChanged(nameof(OnlyNo));
+            }
+        }
     }
 }
