@@ -106,7 +106,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                     IsInProgress = true;
                     await Task.Run(MergingVideos);
                     MergeProgress = 100;
-                    DialogService.ShowMessage("Video merging successfully ended");
+                    await DialogService.ShowConfirmDialog("Соединение видеофрагментов завершено успешно", "Процесс завершен", true);
                     IsInProgress = false;
                     MergeProgress = 0;
                     Items = new ObservableCollection<DirectoryItemViewModel>(

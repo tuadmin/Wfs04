@@ -8,6 +8,7 @@
         xmlns:converters="clr-namespace:WpfApp1.Converters"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
         Title="MainWindow" 
         MinHeight="890" MinWidth="1440"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
@@ -16,586 +17,158 @@
         TextOptions.TextFormattingMode="Ideal" 
         TextOptions.TextRenderingMode="Auto"        
         Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="{DynamicResource MaterialDesignFont}">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <materialDesign:ColorZone Grid.Row="0" 
-                                  Mode="PrimaryMid"
-                                  Padding="10">
-            <StackPanel  
-                IsEnabled="{Binding PageOneViewModel.IsNotInProgress}" 
-                Orientation="Horizontal"
-                Margin="2">
-                <RadioButton
-                    Style="{StaticResource MaterialDesignTabRadioButton}"
-                    Margin="4"
-                    IsChecked="{Binding IsPage1}"
-                    Command="{Binding GoToPage1}">
-                    <TextBlock
-                        Style="{StaticResource MaterialDesignSubtitle1TextBlock}">
-                        Сканирование и извлечение
-                    </TextBlock>
-                </RadioButton>
-            
-                <RadioButton
-                    Style="{StaticResource MaterialDesignTabRadioButton}"
-                    Margin="4"
-                    IsChecked="{Binding IsPage2}"
-                    Command="{Binding GoToPage2}">
-                    <TextBlock
-                        Style="{StaticResource MaterialDesignSubtitle1TextBlock}">
-                        Объединение фрагметов
-                    </TextBlock>
-                </RadioButton>
-            
-                <RadioButton
-                    Style="{StaticResource MaterialDesignTabRadioButton}"
-                    Margin="4"
-                    IsChecked="{Binding IsOptionsPage}"
-                    Command="{Binding GoToOptions}">
-                    <TextBlock
-                        Style="{StaticResource MaterialDesignSubtitle1TextBlock}">
-                        Настройки
-                    </TextBlock>
-                </RadioButton>
-
-                <Button 
-                    Height="30"
-                    Padding="5"
-                    Margin="5"
-                    Content="PrintDebugInfo"
-                    Visibility="Collapsed"
-                    Style="{StaticResource MaterialDesignRaisedAccentButton}"
-                    Command="{Binding PrintDebugInfo}"/>
-                
-            </StackPanel>
-        </materialDesign:ColorZone>
-        
-        <Grid Grid.Row="1" 
-              Visibility="{Binding IsPage1, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" 
-              IsEnabled="{Binding PageOneViewModel.IsNotInProgress}" d:IsHidden="True">
-            
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="14*"/>
-                <ColumnDefinition Width="14*"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0" DataContext="{Binding PageOneViewModel}" Margin="20,10,10,10">
-                <materialDesign:Card Padding="10" Margin="5">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <materialDesign:ColorZone Grid.Row="0" 
-                                                  Mode="PrimaryDark"
-                                                  Padding="10"
-                                                  CornerRadius="5">
-                            <DockPanel>
-                                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                           VerticalAlignment="Center">
-                                    Current project:
-                                </TextBlock>
-                                
-                                <materialDesign:ColorZone Mode="Standard" 
-                                                          Padding="8 4 8 4"
-                                                          CornerRadius="4"
-                                                          Margin="14 0 0 0">
-                                    <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}"
-                                             materialDesign:HintAssist.Hint="Project name"
-                                             materialDesign:TextFieldAssist.TextBoxViewMargin="1 0 1 0"
-                                             materialDesign:HintAssist.FloatingScale="0.50"
-                                             FontSize="20" 
-                                             MaxWidth="250"/>
-                                </materialDesign:ColorZone>
-                                
-                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button
-                                        Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        ToolTip="New Project"
-                                        Margin="0,0,4,0"
-                                        Command="{Binding CreateNewProject}">
-                                        <materialDesign:PackIcon
-                                            Kind="Add"
-                                            Height="24"
-                                            Width="24" />
-                                    </Button>
-                                    <Button
-                                        Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        ToolTip="Load Project" 
-                                        Margin="0,0,4,0"
-                                        Command="{Binding LoadProject}">
-                                        <materialDesign:PackIcon
-                                            Kind="Download"
-                                            Height="24"
-                                            Width="24" />
-                                    </Button>
-                                    <Button
-                                        Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        ToolTip="Delete Project"
-                                        Command="{Binding DeleteProject}">
-                                        <materialDesign:PackIcon
-                                            Kind="GarbageCan"
-                                            Height="24"
-                                            Width="24" />
-                                    </Button>
-                                </StackPanel>
-                            </DockPanel>
-                        </materialDesign:ColorZone>
-                        
-                        <StackPanel Grid.Row="1">
-                            <ListBox ItemsSource="{Binding ProjectsList}" Name="ProjectListBox" 
-                                     Padding="5" 
-                                     Margin="20,5,5,5"  
-                                     MaxHeight="160"
-                                     HorizontalAlignment="Stretch">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="SelectionChanged">
-                                        <i:InvokeCommandAction Command="{Binding SelectedProjectChanged}" CommandParameter="{Binding ElementName=ProjectListBox, Path=SelectedItem}"/>
-                                    </i:EventTrigger>
-                                    <i:EventTrigger EventName="MouseDoubleClick">
-                                        <i:InvokeCommandAction Command="{Binding SelectedProjectChanged}" CommandParameter="{Binding ElementName=ProjectListBox, Path=SelectedItem}"/>
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                            </ListBox>
-                        </StackPanel>
-                    </Grid>
-                    
-                </materialDesign:Card>
-
-                <materialDesign:Card Padding="10" Margin="5">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <materialDesign:ColorZone Grid.Row="0" 
-                                                  Mode="PrimaryDark"
-                                                  Padding="10"
-                                                  CornerRadius="5">
-                            <TextBlock
-                                Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                Text="Источник данных"/>
-                        </materialDesign:ColorZone>
-                        
-                        <StackPanel Grid.Row="1">
-                            <StackPanel Orientation="Horizontal" 
-                                        HorizontalAlignment="Center">
-                                
-                                <RadioButton
-                                    Style="{StaticResource MaterialDesignTabRadioButton}"
-                                    Margin="4"
-                                    IsChecked="{Binding IsWorkWithFile}"
-                                    Content="Файл" 
-                                    Command="{Binding SetWorkWithFile}" /> 
-                                <RadioButton
-                                    Style="{StaticResource MaterialDesignTabRadioButton}"
-                                    Margin="4"
-                                    IsChecked="{Binding IsWorkWithDevice}"
-                                    Content="Диск"
-                                    Command="{Binding SetWorkWithDevice}" />
-                            </StackPanel>
-                            
-                            <Grid Visibility="{Binding IsWorkWithFile, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" 
-                                        CornerRadius="2"
-                                        Padding="5,5,5,5"
-                                        Margin="10,10,0,5"
-                                        BorderBrush="{DynamicResource PrimaryHueMidBrush}"
-                                        BorderThickness="1">
-                                    <TextBlock 
-                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                        Text="{Binding PathToFileWithVideos}" 
-                                        TextAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        TextWrapping="Wrap" />
-                                </Border>
-                                <Button Grid.Column="1"
-                                        Content="Выбрать файл"
-                                        Command="{Binding SelectFile}" 
-                                        Margin="0,10,10,5"/>
-                            </Grid>
-
-                            <ComboBox 
-                                ItemsSource="{Binding DiskList}"
-                                SelectedItem="{Binding SelectedDevice}"
-                                Visibility="{Binding IsWorkWithDevice, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}"
-                                DisplayMemberPath="DeviceId"
-                                Margin="10" />
-                            
-                        </StackPanel>
-                    </Grid>
-                </materialDesign:Card>
-
-                <materialDesign:Card Padding="10" Margin="5">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <materialDesign:ColorZone Grid.Row="0" 
-                                                  Mode="PrimaryDark"
-                                                  Padding="10"
-                                                  CornerRadius="5">
-                            <TextBlock
-                                Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                Text="Папка в которой будут находится видеозаписи"/>
-                        </materialDesign:ColorZone>
-                        
-                        <Grid Grid.Row="1">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" 
-                                    CornerRadius="2"
-                                    Padding="5,5,5,5"
-                                    Margin="10,16,0,5"
-                                    BorderBrush="{DynamicResource PrimaryHueMidBrush}"
-                                    BorderThickness="1">
-                                <TextBlock 
-                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                    Text="{Binding PathToVideos}"
-                                    TextAlignment="Center"
-                                    TextWrapping="Wrap" VerticalAlignment="Center" />
-                            </Border>
-                            <Button Grid.Column="1"
-                                    Content="Выбрать папку"
-                                    Command="{Binding SelectFolder}" 
-                                    Margin="0,16,10,5"/>
-                        </Grid>
-                    </Grid>
-                </materialDesign:Card>
-                
-                <materialDesign:Card Padding="10" Margin="5">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <materialDesign:ColorZone Grid.Row="0" 
-                                                  Mode="PrimaryDark"
-                                                  Padding="10"
-                                                  CornerRadius="5">
-                            <DockPanel>
-                                <ToggleButton DockPanel.Dock="Right" 
-                                              Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
-                                              VerticalAlignment="Center"
-                                              IsChecked="{Binding IsNeedTimeCheck}"/>
-                                <TextBlock DockPanel.Dock="Left" 
-                                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                           VerticalAlignment="Center">
-                                    Фильтрация по времени
-                                </TextBlock>
-                            </DockPanel>
-                        </materialDesign:ColorZone>
-                        
-                        <StackPanel Grid.Row="1" Visibility="{Binding IsNeedTimeCheck, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}">
-                            <TextBlock Text="Дата начала" Margin="20,20,0,0" FontSize="14" FontWeight="DemiBold"/>
-                            <StackPanel Orientation="Horizontal" Margin="20,5,5,5" Height="50">
-                                <DatePicker
-                                    Style="{StaticResource MaterialDesignFloatingHintDatePicker}"
-                                    materialDesign:HintAssist.Hint="Дата начала"
-                                    SelectedDate="{Binding StartDate, UpdateSourceTrigger=PropertyChanged}"
-                                    MinWidth="150" />
-                                
-                                <materialDesign:TimePicker
-                                    Style="{StaticResource MaterialDesignFloatingHintTimePicker}"
-                                    materialDesign:HintAssist.Hint="Время начала"
-                                    Text="{Binding StartTime}"
-                                    Width="150"
-                                    Is24Hours="True" 
-                                    Margin="16,0,0,0" />
-                            </StackPanel>
-
-                            <TextBlock Text="Дата конца" Margin="20,5,0,0" FontSize="14" FontWeight="DemiBold"/>
-                            <StackPanel Orientation="Horizontal" Margin="20,5,5,5" Height="50">
-                                <DatePicker 
-                                    Style="{StaticResource MaterialDesignFloatingHintDatePicker}"
-                                    materialDesign:HintAssist.Hint="Дата конца"
-                                    SelectedDate="{Binding EndDate, UpdateSourceTrigger=PropertyChanged}"
-                                    MinWidth="150" />
-                                
-                                <materialDesign:TimePicker
-                                    Style="{StaticResource MaterialDesignFloatingHintTimePicker}"
-                                    materialDesign:HintAssist.Hint="Время конца"
-                                    Text="{Binding EndTime}"
-                                    Width="150"
-                                    Is24Hours="True" 
-                                    Margin="16,0,0,0" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Grid>
-                </materialDesign:Card>
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" DataContext="{Binding PageOneViewModel}" Margin="12,10,20,10">
-                <DataGrid MinHeight="200" 
-                          MaxHeight="200"
-                          Margin="5" Padding="5" 
-                          ItemsSource="{Binding VideoList}" 
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
-                        <DataGridTextColumn Header="StartDate" Binding="{Binding StartDateTime}" Width="200"/>
-                        <DataGridTextColumn Header="Offset" Binding="{Binding Offset}" Width="150"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-
-                <materialDesign:Card Padding="10" Margin="5">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions> 
-                        <materialDesign:ColorZone Grid.Row="0" 
-                                                  Mode="PrimaryDark"
-                                                  Padding="10"
-                                                  CornerRadius="5">
-                            <TextBlock
-                                Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                Text="Результат сканирования"/>
-                        </materialDesign:ColorZone>
-                        <StackPanel Grid.Row="1"  DataContext="{Binding ScanInfo}" Margin="5,10,0,0">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock
-                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                    Text="Кол-во найденных фрагментов: "
-                                    Padding="5" />
-                                <TextBlock
-                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                    Text="{Binding TotalCount}"
-                                    Padding="5"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock
-                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                    Text="Минимальная дата: "
-                                    Padding="5" />
-                                <TextBlock
-                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                    Text="{Binding MinDateTime}"
-                                    Padding="5"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock
-                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                    Text="Максимальная дата: "
-                                    Padding="5" />
-                                <TextBlock
-                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                    Text="{Binding MaxDateTime}"
-                                    Padding="5"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Grid>
-                </materialDesign:Card>
-                
-                <materialDesign:Card Padding="10" Margin="5">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" 
-                                    Margin="20,20,20,20" 
-                                    HorizontalAlignment="Center">
-                            <Button
-                                Style="{StaticResource MaterialDesignRaisedAccentButton}"
-                                materialDesign:ButtonProgressAssist.Value="-1"
-                                materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding IsInProgress}"
-                                materialDesign:ButtonProgressAssist.IsIndeterminate="True"
-                                Content="Начать сканирование"
-                                Command="{Binding TestScan}" 
-                                Margin="0,0,20,0" />
-                
-                            <Button
-                                Style="{StaticResource MaterialDesignRaisedAccentButton}"
-                                materialDesign:ButtonProgressAssist.Value="-1"
-                                materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding IsInProgress}"
-                                materialDesign:ButtonProgressAssist.IsIndeterminate="True"
-                                Content="Извлечь видеофрагменты"
-                                Command="{Binding TestStart}" 
-                                Margin="20,0,0,0" />
-                        </StackPanel>
-                        
-                        <StackPanel Margin="10,5,10,10">
-                            <TextBlock 
-                                Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
-                                Text="Прогресс" 
-                                HorizontalAlignment="Center" Margin="0,0,0,6" />
-                            <ProgressBar Value="{Binding ExtractProgress}"
-                                         Height="16"/>
-                        </StackPanel>
-
-                        <StackPanel Visibility="{Binding IsNeedSecondProgressBar, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" Margin="10,5,10,10">
-                            <TextBlock 
-                                Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
-                                Text="Прогресс распределения по камерам" 
-                                HorizontalAlignment="Center" Margin="0,0,0,6"/>
-                            <ProgressBar Value="{Binding CamSortingProgress}" 
-                                         Height="16"/>
-                        </StackPanel>
-                    </StackPanel>
-                    
-                </materialDesign:Card>
-
-                <TextBox
-                    Visibility="Collapsed"
-                    Text="{Binding LogText, Mode=OneWay}" 
-                    IsReadOnly="True" 
-                    VerticalScrollBarVisibility="Auto"/>
-            </StackPanel>
-
-        </Grid>
-
-        <Grid Grid.Row="1" Visibility="{Binding IsPage2, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding IsNotInProgress}">
+        FontFamily="{materialDesign:MaterialDesignFont}">
+    <materialDesign:DialogHost Identifier="RootDialog">
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0"
-                        Orientation="Horizontal"
+
+            <materialDesign:ColorZone Grid.Row="0" 
+                                      Mode="PrimaryMid"
+                                      Padding="10">
+                <StackPanel  
+                    IsEnabled="{Binding PageOneViewModel.IsNotInProgress}" 
+                    Orientation="Horizontal"
+                    Margin="2">
+                    <RadioButton
+                        Style="{StaticResource MaterialDesignTabRadioButton}"
+                        Margin="4"
+                        IsChecked="{Binding IsPage1}"
+                        Command="{Binding GoToPage1}">
+                        <TextBlock
+                            Style="{StaticResource MaterialDesignSubtitle1TextBlock}">
+                            Сканирование и извлечение
+                        </TextBlock>
+                    </RadioButton>
+                
+                    <RadioButton
+                        Style="{StaticResource MaterialDesignTabRadioButton}"
+                        Margin="4"
+                        IsChecked="{Binding IsPage2}"
+                        Command="{Binding GoToPage2}">
+                        <TextBlock
+                            Style="{StaticResource MaterialDesignSubtitle1TextBlock}">
+                            Объединение фрагметов
+                        </TextBlock>
+                    </RadioButton>
+                
+                    <RadioButton
+                        Style="{StaticResource MaterialDesignTabRadioButton}"
+                        Margin="4"
+                        IsChecked="{Binding IsOptionsPage}"
+                        Command="{Binding GoToOptions}">
+                        <TextBlock
+                            Style="{StaticResource MaterialDesignSubtitle1TextBlock}">
+                            Настройки
+                        </TextBlock>
+                    </RadioButton>
+
+                    <Button 
+                        Height="30"
+                        Padding="5"
                         Margin="5"
-                        DataContext="{Binding PageTwoViewModel}">
-                <Grid Width="520">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" 
-                            CornerRadius="2"
-                            Padding="5,5,5,5"
-                            Margin="10,16,0,5"
-                            BorderBrush="{DynamicResource PrimaryHueMidBrush}"
-                            BorderThickness="1">
-                        <TextBlock 
-                            Style="{StaticResource MaterialDesignBody2TextBlock}"
-                            Text="{Binding RootPath}"
-                            TextAlignment="Center"
-                            TextWrapping="Wrap"/>
-                    </Border>
-                    <Button Grid.Column="1"
-                            Content="Выбрать папку"
-                            Command="{Binding SelectFolder}" 
-                            Margin="0,16,10,5"/>
-                </Grid>
-                
-                <Button
-                    Style="{DynamicResource MaterialDesignRaisedAccentButton}"
-                    materialDesign:ButtonProgressAssist.Value="-1"
-                    materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding IsInProgress}"
-                    materialDesign:ButtonProgressAssist.IsIndeterminate="True"
-                    Content="Склеить видео" 
-                    Width="140"
-                    Command="{Binding StartMergingVideos}" 
-                    Margin="0,10,0,0"/>
-
-                <ProgressBar
-                    Value="{Binding MergeProgress}"
-                    Height="16"
-                    Width="500"
-                    Margin="10,10,10,0" />
-
-            </StackPanel>
+                        Content="PrintDebugInfo"
+                        Style="{StaticResource MaterialDesignRaisedAccentButton}"
+                        Command="{Binding PrintDebugInfo}"/>
+                    
+                </StackPanel>
+            </materialDesign:ColorZone>
             
-            <Grid Grid.Row="1" DataContext="{Binding PageTwoViewModel}">
+            <Grid Grid.Row="1" 
+                  Visibility="{Binding IsPage1, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" 
+                  IsEnabled="{Binding PageOneViewModel.IsNotInProgress}" d:IsHidden="True">
+                
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="14*"/>
+                    <ColumnDefinition Width="14*"/>
                 </Grid.ColumnDefinitions>
-                <TreeView Grid.Column="0" Margin="20,10,10,10" MinWidth="300"
-                      ItemsSource="{Binding Items}"
-                      AllowDrop="True"
-                      Name="FilesView">
-                    <TreeView.ItemContainerStyle>
-                        <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource MaterialDesignTreeViewItem}">
-                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-                        </Style>
 
-                    </TreeView.ItemContainerStyle>
-
-                    <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate ItemsSource="{Binding Childs}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="{Binding Type, Converter={x:Static converters:DirectoryItemTypeToIconConverter.Instance}}"
-                                                         Height="16"
-                                                         Width="16"
-                                                         Margin="3"/>
-                                <TextBlock VerticalAlignment="Center" Text="{Binding Name}" AllowDrop="True"/>
-                                <!--<i:Interaction.Triggers>
-
-                                    ~1~ <i:EventTrigger EventName="DragOver"> @1@
-                                    ~1~     <i:InvokeCommandAction Command="{Binding DragEnter}"/> @1@
-                                    ~1~ </i:EventTrigger> @1@
-
-                                    ~1~ <i:EventTrigger EventName="Drop"> @1@
-                                    ~1~     <i:InvokeCommandAction Command="{Binding Drop}"/> @1@
-                                    ~1~ </i:EventTrigger> @1@
-
-                                    ~1~ <i:EventTrigger EventName="MouseMove"> @1@
-                                    ~1~     <i:InvokeCommandAction Command="{Binding MouseMove}"/> @1@
-                                    ~1~ </i:EventTrigger> @1@
-
-                                    ~1~ <i:EventTrigger EventName="MouseDoubleClick"> @1@
-                                    ~1~     <i:InvokeCommandAction Command="{Binding DoubleClick}"/> @1@
-                                    ~1~ </i:EventTrigger> @1@
-
-                                    <i:EventTrigger EventName="MouseLeftButtonDown">
-                                        <i:InvokeCommandAction Command="{Binding MouseLeftButtonDown}"/>
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>-->
+                <StackPanel Grid.Column="0" DataContext="{Binding PageOneViewModel}" Margin="20,10,10,10">
+                    <materialDesign:Card Padding="10" Margin="5">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <materialDesign:ColorZone Grid.Row="0" 
+                                                      Mode="PrimaryDark"
+                                                      Padding="10"
+                                                      CornerRadius="5">
+                                <DockPanel>
+                                    <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                               VerticalAlignment="Center">
+                                        Current project:
+                                    </TextBlock>
+                                    
+                                    <materialDesign:ColorZone Mode="Standard" 
+                                                              Padding="8 4 8 4"
+                                                              CornerRadius="4"
+                                                              Margin="14 0 0 0">
+                                        <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}"
+                                                 materialDesign:HintAssist.Hint="Project name"
+                                                 materialDesign:TextFieldAssist.TextBoxViewMargin="1 0 1 0"
+                                                 materialDesign:HintAssist.FloatingScale="0.50"
+                                                 FontSize="20" 
+                                                 MaxWidth="250"/>
+                                    </materialDesign:ColorZone>
+                                    
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button
+                                            Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                            ToolTip="New Project"
+                                            Margin="0,0,4,0"
+                                            Command="{Binding CreateNewProject}">
+                                            <materialDesign:PackIcon
+                                                Kind="Add"
+                                                Height="24"
+                                                Width="24" />
+                                        </Button>
+                                        <Button
+                                            Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                            ToolTip="Load Project" 
+                                            Margin="0,0,4,0"
+                                            Command="{Binding LoadProject}">
+                                            <materialDesign:PackIcon
+                                                Kind="Download"
+                                                Height="24"
+                                                Width="24" />
+                                        </Button>
+                                        <Button
+                                            Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                            ToolTip="Delete Project"
+                                            Command="{Binding DeleteProject}">
+                                            <materialDesign:PackIcon
+                                                Kind="GarbageCan"
+                                                Height="24"
+                                                Width="24" />
+                                        </Button>
+                                    </StackPanel>
+                                </DockPanel>
+                            </materialDesign:ColorZone>
+                            
+                            <StackPanel Grid.Row="1">
+                                <ListBox ItemsSource="{Binding ProjectsList}" Name="ProjectListBox" 
+                                         Padding="5" 
+                                         Margin="20,5,5,5"  
+                                         MaxHeight="160"
+                                         HorizontalAlignment="Stretch">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="SelectionChanged">
+                                            <i:InvokeCommandAction Command="{Binding SelectedProjectChanged}" CommandParameter="{Binding ElementName=ProjectListBox, Path=SelectedItem}"/>
+                                        </i:EventTrigger>
+                                        <i:EventTrigger EventName="MouseDoubleClick">
+                                            <i:InvokeCommandAction Command="{Binding SelectedProjectChanged}" CommandParameter="{Binding ElementName=ProjectListBox, Path=SelectedItem}"/>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                </ListBox>
                             </StackPanel>
-                        </HierarchicalDataTemplate>
-                    </TreeView.ItemTemplate>
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="SelectedItemChanged">
-                            <i:InvokeCommandAction Command="{Binding OnSelectedItemChange}" CommandParameter="{Binding ElementName=FilesView, Path=SelectedItem}"/>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </TreeView>
-                
-                <Border
-                    Grid.Column="1"
-                    Margin="10"
-                    BorderBrush="{DynamicResource PrimaryHueMidBrush}"
-                    BorderThickness="1"
-                    CornerRadius="5">
-                    <MediaElement
-                        ScrubbingEnabled="True"
-                        Stretch="Fill"
-                        LoadedBehavior="Play"
-                        UnloadedBehavior="Close"
-                        Source="{Binding SelectedItem.FullPath}"/>
-                </Border>
-            </Grid>
-        </Grid>
+                        </Grid>
+                        
+                    </materialDesign:Card>
 
-        <Grid Grid.Row="1" Visibility="{Binding IsOptionsPage, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" d:IsHidden="True">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="2*"/>
-                <RowDefinition Height="20*"/>
-            </Grid.RowDefinitions>
-            
-            <StackPanel Grid.Row="0">
-                <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}" 
-                           Text="Настройки" 
-                           TextAlignment="Center" 
-                           HorizontalAlignment="Center" 
-                           Margin="0,10,0,5"/>
-                <Separator/>
-            </StackPanel>
-            
-            <WrapPanel Grid.Row="1">
-                <StackPanel>
-                    <materialDesign:Card Padding="10" Margin="20,5,10,8" DataContext="{Binding PageOneViewModel}">
+                    <materialDesign:Card Padding="10" Margin="5">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -605,10 +178,76 @@
                                                       Mode="PrimaryDark"
                                                       Padding="10"
                                                       CornerRadius="5">
-                                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                           VerticalAlignment="Center">
-                                    Путь к python.exe
-                                </TextBlock>
+                                <TextBlock
+                                    Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                    Text="Источник данных"/>
+                            </materialDesign:ColorZone>
+                            
+                            <StackPanel Grid.Row="1">
+                                <StackPanel Orientation="Horizontal" 
+                                            HorizontalAlignment="Center">
+                                    
+                                    <RadioButton
+                                        Style="{StaticResource MaterialDesignTabRadioButton}"
+                                        Margin="4"
+                                        IsChecked="{Binding IsWorkWithFile}"
+                                        Content="Файл" 
+                                        Command="{Binding SetWorkWithFile}" /> 
+                                    <RadioButton
+                                        Style="{StaticResource MaterialDesignTabRadioButton}"
+                                        Margin="4"
+                                        IsChecked="{Binding IsWorkWithDevice}"
+                                        Content="Диск"
+                                        Command="{Binding SetWorkWithDevice}" />
+                                </StackPanel>
+                                
+                                <Grid Visibility="{Binding IsWorkWithFile, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" 
+                                            CornerRadius="2"
+                                            Padding="5,5,5,5"
+                                            Margin="10,10,0,5"
+                                            BorderBrush="{DynamicResource PrimaryHueMidBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock 
+                                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                            Text="{Binding PathToFileWithVideos}" 
+                                            TextAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            TextWrapping="Wrap" />
+                                    </Border>
+                                    <Button Grid.Column="1"
+                                            Content="Выбрать файл"
+                                            Command="{Binding SelectFile}" 
+                                            Margin="0,10,10,5"/>
+                                </Grid>
+
+                                <ComboBox 
+                                    ItemsSource="{Binding DiskList}"
+                                    SelectedItem="{Binding SelectedDevice}"
+                                    Visibility="{Binding IsWorkWithDevice, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}"
+                                    DisplayMemberPath="DeviceId"
+                                    Margin="10" />
+                            </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <materialDesign:Card Padding="10" Margin="5">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <materialDesign:ColorZone Grid.Row="0" 
+                                                      Mode="PrimaryDark"
+                                                      Padding="10"
+                                                      CornerRadius="5">
+                                <TextBlock
+                                    Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                    Text="Папка в которой будут находится видеозаписи"/>
                             </materialDesign:ColorZone>
                             
                             <Grid Grid.Row="1">
@@ -624,19 +263,19 @@
                                         BorderThickness="1">
                                     <TextBlock 
                                         Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                        Text="{Binding PathToPythonExe}"
+                                        Text="{Binding PathToVideos}"
                                         TextAlignment="Center"
                                         TextWrapping="Wrap" VerticalAlignment="Center" />
                                 </Border>
                                 <Button Grid.Column="1"
-                                        Content="Выбрать путь"
-                                        Command="{Binding SelectPythonExePath}" 
+                                        Content="Выбрать папку"
+                                        Command="{Binding SelectFolder}" 
                                         Margin="0,16,10,5"/>
                             </Grid>
                         </Grid>
                     </materialDesign:Card>
                     
-                    <materialDesign:Card Padding="10" Margin="20,5,10,8" DataContext="{Binding PageOneViewModel}">
+                    <materialDesign:Card Padding="10" Margin="5">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -646,80 +285,441 @@
                                                       Mode="PrimaryDark"
                                                       Padding="10"
                                                       CornerRadius="5">
-                                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                           VerticalAlignment="Center">
-                                    Путь к скрипту
-                                </TextBlock>
+                                <DockPanel>
+                                    <ToggleButton DockPanel.Dock="Right" 
+                                                  Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding IsNeedTimeCheck}"/>
+                                    <TextBlock DockPanel.Dock="Left" 
+                                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                               VerticalAlignment="Center">
+                                        Фильтрация по времени
+                                    </TextBlock>
+                                </DockPanel>
                             </materialDesign:ColorZone>
                             
-                            <Grid Grid.Row="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" 
-                                        CornerRadius="2"
-                                        Padding="5,5,5,5"
-                                        Margin="10,16,0,5"
-                                        BorderBrush="{DynamicResource PrimaryHueMidBrush}"
-                                        BorderThickness="1">
-                                    <TextBlock 
-                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                        Text="{Binding PathToPythonScript}"
-                                        TextAlignment="Center"
-                                        TextWrapping="Wrap" VerticalAlignment="Center" />
-                                </Border>
-                                <Button Grid.Column="1"
-                                        Content="Выбрать путь"
-                                        Command="{Binding SelectPythonScriptPath}" 
-                                        Margin="0,16,10,5"/>
-                            </Grid>
-                        </Grid>
-                    </materialDesign:Card>
-                    
-                    <materialDesign:Card Padding="10" Margin="20,5,10,8" DataContext="{Binding PageOneViewModel}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <materialDesign:ColorZone Grid.Row="0" 
-                                                      Mode="PrimaryDark"
-                                                      Padding="10"
-                                                      CornerRadius="5">
-                                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                           VerticalAlignment="Center">
-                                    Путь к файлу результата
-                                </TextBlock>
-                            </materialDesign:ColorZone>
-                            
-                            <Grid Grid.Row="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" 
-                                        CornerRadius="2"
-                                        Padding="5,5,5,5"
-                                        Margin="10,16,0,5"
-                                        BorderBrush="{DynamicResource PrimaryHueMidBrush}"
-                                        BorderThickness="1">
-                                    <TextBlock 
-                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                        Text="{Binding PathToPythonOutput}"
-                                        TextAlignment="Center"
-                                        TextWrapping="Wrap" VerticalAlignment="Center" />
-                                </Border>
-                                <Button Grid.Column="1"
-                                        Content="Выбрать путь"
-                                        Command="{Binding SelectPythonOutputPath}" 
-                                        Margin="0,16,10,5"/>
-                            </Grid>
+                            <StackPanel Grid.Row="1" Visibility="{Binding IsNeedTimeCheck, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}">
+                                <TextBlock Text="Дата начала" Margin="20,20,0,0" FontSize="14" FontWeight="DemiBold"/>
+                                <StackPanel Orientation="Horizontal" Margin="20,5,5,5" Height="50">
+                                    <DatePicker
+                                        Style="{StaticResource MaterialDesignFloatingHintDatePicker}"
+                                        materialDesign:HintAssist.Hint="Дата начала"
+                                        SelectedDate="{Binding StartDate, UpdateSourceTrigger=PropertyChanged}"
+                                        MinWidth="150" />
+                                    
+                                    <materialDesign:TimePicker
+                                        Style="{StaticResource MaterialDesignFloatingHintTimePicker}"
+                                        materialDesign:HintAssist.Hint="Время начала"
+                                        Text="{Binding StartTime}"
+                                        Width="150"
+                                        Is24Hours="True" 
+                                        Margin="16,0,0,0" />
+                                </StackPanel>
+
+                                <TextBlock Text="Дата конца" Margin="20,5,0,0" FontSize="14" FontWeight="DemiBold"/>
+                                <StackPanel Orientation="Horizontal" Margin="20,5,5,5" Height="50">
+                                    <DatePicker 
+                                        Style="{StaticResource MaterialDesignFloatingHintDatePicker}"
+                                        materialDesign:HintAssist.Hint="Дата конца"
+                                        SelectedDate="{Binding EndDate, UpdateSourceTrigger=PropertyChanged}"
+                                        MinWidth="150" />
+                                    
+                                    <materialDesign:TimePicker
+                                        Style="{StaticResource MaterialDesignFloatingHintTimePicker}"
+                                        materialDesign:HintAssist.Hint="Время конца"
+                                        Text="{Binding EndTime}"
+                                        Width="150"
+                                        Is24Hours="True" 
+                                        Margin="16,0,0,0" />
+                                </StackPanel>
+                            </StackPanel>
                         </Grid>
                     </materialDesign:Card>
                 </StackPanel>
-            </WrapPanel>
-        </Grid>
-    </Grid>
 
+                <StackPanel Grid.Column="1" DataContext="{Binding PageOneViewModel}" Margin="12,10,20,10">
+                    <DataGrid MinHeight="200" 
+                              MaxHeight="200"
+                              Margin="5" Padding="5" 
+                              ItemsSource="{Binding VideoList}" 
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
+                            <DataGridTextColumn Header="StartDate" Binding="{Binding StartDateTime}" Width="200"/>
+                            <DataGridTextColumn Header="Offset" Binding="{Binding Offset}" Width="150"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <materialDesign:Card Padding="10" Margin="5">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions> 
+                            <materialDesign:ColorZone Grid.Row="0" 
+                                                      Mode="PrimaryDark"
+                                                      Padding="10"
+                                                      CornerRadius="5">
+                                <TextBlock
+                                    Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                    Text="Результат сканирования"/>
+                            </materialDesign:ColorZone>
+                            <StackPanel Grid.Row="1"  DataContext="{Binding ScanInfo}" Margin="5,10,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock
+                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                        Text="Кол-во найденных фрагментов: "
+                                        Padding="5" />
+                                    <TextBlock
+                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                        Text="{Binding TotalCount}"
+                                        Padding="5"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock
+                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                        Text="Минимальная дата: "
+                                        Padding="5" />
+                                    <TextBlock
+                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                        Text="{Binding MinDateTime}"
+                                        Padding="5"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock
+                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                        Text="Максимальная дата: "
+                                        Padding="5" />
+                                    <TextBlock
+                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                        Text="{Binding MaxDateTime}"
+                                        Padding="5"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
+                    
+                    <materialDesign:Card Padding="10" Margin="5">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" 
+                                        Margin="20,20,20,20" 
+                                        HorizontalAlignment="Center">
+                                <Button
+                                    Style="{StaticResource MaterialDesignRaisedAccentButton}"
+                                    materialDesign:ButtonProgressAssist.Value="-1"
+                                    materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding IsInProgress}"
+                                    materialDesign:ButtonProgressAssist.IsIndeterminate="True"
+                                    Content="Начать сканирование"
+                                    Command="{Binding TestScan}" 
+                                    Margin="0,0,20,0" />
+                    
+                                <Button
+                                    Style="{StaticResource MaterialDesignRaisedAccentButton}"
+                                    materialDesign:ButtonProgressAssist.Value="-1"
+                                    materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding IsInProgress}"
+                                    materialDesign:ButtonProgressAssist.IsIndeterminate="True"
+                                    Content="Извлечь видеофрагменты"
+                                    Command="{Binding TestStart}" 
+                                    Margin="20,0,0,0" />
+                            </StackPanel>
+                            
+                            <StackPanel Margin="10,5,10,10">
+                                <TextBlock 
+                                    Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                                    Text="Прогресс" 
+                                    HorizontalAlignment="Center" Margin="0,0,0,6" />
+                                <ProgressBar Value="{Binding ExtractProgress}"
+                                             Height="16"/>
+                            </StackPanel>
+
+                            <StackPanel Visibility="{Binding IsNeedSecondProgressBar, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" Margin="10,5,10,10">
+                                <TextBlock 
+                                    Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                                    Text="Прогресс распределения по камерам" 
+                                    HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                <ProgressBar Value="{Binding CamSortingProgress}" 
+                                             Height="16"/>
+                            </StackPanel>
+                        </StackPanel>
+                        
+                    </materialDesign:Card>
+
+                    <TextBox
+                        Visibility="Collapsed"
+                        Text="{Binding LogText, Mode=OneWay}" 
+                        IsReadOnly="True" 
+                        VerticalScrollBarVisibility="Auto"/>
+                </StackPanel>
+
+            </Grid>
+
+            <Grid Grid.Row="1" Visibility="{Binding IsPage2, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding IsNotInProgress}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0"
+                            Orientation="Horizontal"
+                            Margin="5"
+                            DataContext="{Binding PageTwoViewModel}">
+                    <Grid Width="520">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" 
+                                CornerRadius="2"
+                                Padding="5,5,5,5"
+                                Margin="10,16,0,5"
+                                BorderBrush="{DynamicResource PrimaryHueMidBrush}"
+                                BorderThickness="1">
+                            <TextBlock 
+                                Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                Text="{Binding RootPath}"
+                                TextAlignment="Center"
+                                TextWrapping="Wrap"/>
+                        </Border>
+                        <Button Grid.Column="1"
+                                Content="Выбрать папку"
+                                Command="{Binding SelectFolder}" 
+                                Margin="0,16,10,5"/>
+                    </Grid>
+                    
+                    <Button
+                        Style="{DynamicResource MaterialDesignRaisedAccentButton}"
+                        materialDesign:ButtonProgressAssist.Value="-1"
+                        materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding IsInProgress}"
+                        materialDesign:ButtonProgressAssist.IsIndeterminate="True"
+                        Content="Склеить видео" 
+                        Width="140"
+                        Command="{Binding StartMergingVideos}" 
+                        Margin="0,10,0,0"/>
+
+                    <ProgressBar
+                        Value="{Binding MergeProgress}"
+                        Height="16"
+                        Width="500"
+                        Margin="10,10,10,0" />
+
+                </StackPanel>
+                
+                <Grid Grid.Row="1" DataContext="{Binding PageTwoViewModel}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TreeView Grid.Column="0" Margin="20,10,10,10" MinWidth="300"
+                          ItemsSource="{Binding Items}"
+                          AllowDrop="True"
+                          Name="FilesView">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource MaterialDesignTreeViewItem}">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                            </Style>
+
+                        </TreeView.ItemContainerStyle>
+
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Childs}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="{Binding Type, Converter={x:Static converters:DirectoryItemTypeToIconConverter.Instance}}"
+                                                             Height="16"
+                                                             Width="16"
+                                                             Margin="3"/>
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding Name}" AllowDrop="True"/>
+                                    <!--<i:Interaction.Triggers>
+
+                                        ~1~ <i:EventTrigger EventName="DragOver"> @1@
+                                        ~1~     <i:InvokeCommandAction Command="{Binding DragEnter}"/> @1@
+                                        ~1~ </i:EventTrigger> @1@
+
+                                        ~1~ <i:EventTrigger EventName="Drop"> @1@
+                                        ~1~     <i:InvokeCommandAction Command="{Binding Drop}"/> @1@
+                                        ~1~ </i:EventTrigger> @1@
+
+                                        ~1~ <i:EventTrigger EventName="MouseMove"> @1@
+                                        ~1~     <i:InvokeCommandAction Command="{Binding MouseMove}"/> @1@
+                                        ~1~ </i:EventTrigger> @1@
+
+                                        ~1~ <i:EventTrigger EventName="MouseDoubleClick"> @1@
+                                        ~1~     <i:InvokeCommandAction Command="{Binding DoubleClick}"/> @1@
+                                        ~1~ </i:EventTrigger> @1@
+
+                                        <i:EventTrigger EventName="MouseLeftButtonDown">
+                                            <i:InvokeCommandAction Command="{Binding MouseLeftButtonDown}"/>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>-->
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectedItemChanged">
+                                <i:InvokeCommandAction Command="{Binding OnSelectedItemChange}" CommandParameter="{Binding ElementName=FilesView, Path=SelectedItem}"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </TreeView>
+                    
+                    <Border
+                        Grid.Column="1"
+                        Margin="10"
+                        BorderBrush="{DynamicResource PrimaryHueMidBrush}"
+                        BorderThickness="1"
+                        CornerRadius="5">
+                        <MediaElement
+                            ScrubbingEnabled="True"
+                            Stretch="Fill"
+                            LoadedBehavior="Play"
+                            UnloadedBehavior="Close"
+                            Source="{Binding SelectedItem.FullPath}"/>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Row="1" Visibility="{Binding IsOptionsPage, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" d:IsHidden="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="20*"/>
+                </Grid.RowDefinitions>
+                
+                <StackPanel Grid.Row="0">
+                    <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}" 
+                               Text="Настройки" 
+                               TextAlignment="Center" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,10,0,5"/>
+                    <Separator/>
+                </StackPanel>
+                
+                <WrapPanel Grid.Row="1">
+                    <StackPanel>
+                        <materialDesign:Card Padding="10" Margin="20,5,10,8" DataContext="{Binding PageOneViewModel}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <materialDesign:ColorZone Grid.Row="0" 
+                                                          Mode="PrimaryDark"
+                                                          Padding="10"
+                                                          CornerRadius="5">
+                                    <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                               VerticalAlignment="Center">
+                                        Путь к python.exe
+                                    </TextBlock>
+                                </materialDesign:ColorZone>
+                                
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" 
+                                            CornerRadius="2"
+                                            Padding="5,5,5,5"
+                                            Margin="10,16,0,5"
+                                            BorderBrush="{DynamicResource PrimaryHueMidBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock 
+                                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                            Text="{Binding PathToPythonExe}"
+                                            TextAlignment="Center"
+                                            TextWrapping="Wrap" VerticalAlignment="Center" />
+                                    </Border>
+                                    <Button Grid.Column="1"
+                                            Content="Выбрать путь"
+                                            Command="{Binding SelectPythonExePath}" 
+                                            Margin="0,16,10,5"/>
+                                </Grid>
+                            </Grid>
+                        </materialDesign:Card>
+                        
+                        <materialDesign:Card Padding="10" Margin="20,5,10,8" DataContext="{Binding PageOneViewModel}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <materialDesign:ColorZone Grid.Row="0" 
+                                                          Mode="PrimaryDark"
+                                                          Padding="10"
+                                                          CornerRadius="5">
+                                    <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                               VerticalAlignment="Center">
+                                        Путь к скрипту
+                                    </TextBlock>
+                                </materialDesign:ColorZone>
+                                
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" 
+                                            CornerRadius="2"
+                                            Padding="5,5,5,5"
+                                            Margin="10,16,0,5"
+                                            BorderBrush="{DynamicResource PrimaryHueMidBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock 
+                                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                            Text="{Binding PathToPythonScript}"
+                                            TextAlignment="Center"
+                                            TextWrapping="Wrap" VerticalAlignment="Center" />
+                                    </Border>
+                                    <Button Grid.Column="1"
+                                            Content="Выбрать путь"
+                                            Command="{Binding SelectPythonScriptPath}" 
+                                            Margin="0,16,10,5"/>
+                                </Grid>
+                            </Grid>
+                        </materialDesign:Card>
+                        
+                        <materialDesign:Card Padding="10" Margin="20,5,10,8" DataContext="{Binding PageOneViewModel}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <materialDesign:ColorZone Grid.Row="0" 
+                                                          Mode="PrimaryDark"
+                                                          Padding="10"
+                                                          CornerRadius="5">
+                                    <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                               VerticalAlignment="Center">
+                                        Путь к файлу результата
+                                    </TextBlock>
+                                </materialDesign:ColorZone>
+                                
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" 
+                                            CornerRadius="2"
+                                            Padding="5,5,5,5"
+                                            Margin="10,16,0,5"
+                                            BorderBrush="{DynamicResource PrimaryHueMidBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock 
+                                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                            Text="{Binding PathToPythonOutput}"
+                                            TextAlignment="Center"
+                                            TextWrapping="Wrap" VerticalAlignment="Center" />
+                                    </Border>
+                                    <Button Grid.Column="1"
+                                            Content="Выбрать путь"
+                                            Command="{Binding SelectPythonOutputPath}" 
+                                            Margin="0,16,10,5"/>
+                                </Grid>
+                            </Grid>
+                        </materialDesign:Card>
+                    </StackPanel>
+                </WrapPanel>
+            </Grid>
+        </Grid>
+    </materialDesign:DialogHost>
 </Window>

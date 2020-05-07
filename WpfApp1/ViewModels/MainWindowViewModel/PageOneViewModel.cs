@@ -358,11 +358,14 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         {
             get
             {
-                return _createNewProject ??= new RelayCommand(_ =>
+                return _createNewProject ??= new RelayCommand(async _ =>
                 {
                     if (DatabaseService.IsTableExist(ProjectName))
                     {
-                        if (DialogService.ShowConfirmDialog("Проект с таким именем уже существует. Создание нового проекта с таким же именем приведет к удалению старого проета. Вы уверены что хотите продолжить?"))
+                        var result = await DialogService.ShowConfirmDialog(
+                            "Проект с таким именем уже существует. \nСоздание нового проекта с таким же именем приведет к удалению старого проета. \nВы уверены что хотите продолжить?");
+                        
+                        if (result)
                         {
                             DatabaseService.DeleteProjectTable(ProjectName);
                         }
@@ -384,12 +387,12 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         {
             get
             {
-                return _loadProject ??= new RelayCommand(_ =>
+                return _loadProject ??= new RelayCommand(async _ =>
                 {
                     LogText += "LoadStart\n";
                     if (!DatabaseService.IsTableExist(ProjectName))
                     {
-                        DialogService.ShowMessage("Проекта с таким именем не существует");
+                        await DialogService.ShowConfirmDialog("Проекта с таким именем не существует", "Ошибка", true);
                         return;
                     }
 
@@ -405,10 +408,11 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         {
             get
             {
-                return _deleteProject ??= new RelayCommand(_ =>
+                return _deleteProject ??= new RelayCommand(async _ =>
                 {
                     if (!DatabaseService.IsTableExist(ProjectName)) return;
-                    if (!DialogService.ShowConfirmDialog("Вы уверены что хотите удалить проект?")) return;
+                    var result = await DialogService.ShowConfirmDialog("Вы уверены что хотите удалить проект?");
+                    if (!result) return;
                     DatabaseService.DeleteProjectTable(ProjectName);
                     ProjectsList = DatabaseService.GetExistingProjects();
                 }, _ => !string.IsNullOrWhiteSpace(ProjectName));
@@ -488,7 +492,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                 {
                     if (!DatabaseService.IsTableExist(ProjectName))
                     {
-                        DialogService.ShowMessage("Проект с таким именем не найден");
+                        await DialogService.ShowConfirmDialog("Проект с таким именем не найден", "Ошибка", true);
                         return;
                     }
                     
@@ -525,7 +529,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                     await Task.Run(RunScript);
                     CamSortingProgress = 100;
 
-                    DialogService.ShowMessage("Extract ended successfully.");
+                    await DialogService.ShowConfirmDialog("Извлечение видеофрагментов успешно завершено", "Процесс завершен" , true);
                     IsInProgress = false;
                     ExtractProgress = 0;
                     CamSortingProgress = 0;
@@ -541,7 +545,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                 {
                     if (!DatabaseService.IsTableExist(ProjectName))
                     {
-                        DialogService.ShowMessage("Проект с таким именем не найден");
+                        await DialogService.ShowConfirmDialog("Проект с таким именем не найден", "Ошибка", true);
                         return;
                     }
 
@@ -561,7 +565,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                     ScanInfo = DatabaseService.GetScanInfo(ProjectName);
                     VideoList = DatabaseService.GetDataFromProjectTable(ProjectName);
 
-                    DialogService.ShowMessage("Scan ended successfully.");
+                    await DialogService.ShowConfirmDialog("Сканирование успешно завершено", "Процесс завершен", true);
                     IsInProgress = false;
                     ExtractProgress = 0;
                 }, _ => SelectedDevice.Size > 0 || !string.IsNullOrEmpty(PathToFileWithVideos));
