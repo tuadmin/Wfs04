@@ -10,7 +10,7 @@
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Title="MainWindow" 
-        MinHeight="890" MinWidth="1440"
+        MinHeight="980" MinWidth="1440"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -25,60 +25,62 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <materialDesign:ColorZone Grid.Row="0" 
-                                      Mode="PrimaryMid"
+            <materialDesign:ColorZone Grid.Row="0"
                                       Padding="10">
                 <StackPanel  
-                    IsEnabled="{Binding PageOneViewModel.IsNotInProgress}" 
-                    Orientation="Horizontal"
-                    Margin="2">
-                    <RadioButton
-                        Style="{StaticResource MaterialDesignTabRadioButton}"
-                        Margin="4"
-                        IsChecked="{Binding IsPage1}"
-                        Command="{Binding GoToPage1}">
-                        <TextBlock
-                            Style="{StaticResource MaterialDesignSubtitle1TextBlock}">
-                            Сканирование и извлечение
-                        </TextBlock>
-                    </RadioButton>
-                
-                    <RadioButton
-                        Style="{StaticResource MaterialDesignTabRadioButton}"
-                        Margin="4"
-                        IsChecked="{Binding IsPage2}"
-                        Command="{Binding GoToPage2}">
-                        <TextBlock
-                            Style="{StaticResource MaterialDesignSubtitle1TextBlock}">
-                            Объединение фрагметов
-                        </TextBlock>
-                    </RadioButton>
-                
-                    <RadioButton
-                        Style="{StaticResource MaterialDesignTabRadioButton}"
-                        Margin="4"
-                        IsChecked="{Binding IsOptionsPage}"
-                        Command="{Binding GoToOptions}">
-                        <TextBlock
-                            Style="{StaticResource MaterialDesignSubtitle1TextBlock}">
-                            Настройки
-                        </TextBlock>
-                    </RadioButton>
-
-                    <Button 
-                        Height="30"
-                        Padding="5"
-                        Margin="5"
-                        Content="PrintDebugInfo"
-                        Style="{StaticResource MaterialDesignRaisedAccentButton}"
-                        Command="{Binding PrintDebugInfo}"/>
+                        IsEnabled="{Binding PageOneViewModel.IsNotInProgress}" 
+                        Orientation="Horizontal"
+                        Margin="2">
+                        <RadioButton
+                            Style="{StaticResource MaterialDesignTabRadioButton}"
+                            Margin="4"
+                            IsChecked="{Binding IsPage1}"
+                            Command="{Binding GoToPage1}">
+                            <TextBlock
+                                Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                FontSize="18">
+                                Сканирование и извлечение
+                            </TextBlock>
+                        </RadioButton>
                     
+                        <RadioButton
+                            Style="{StaticResource MaterialDesignTabRadioButton}"
+                            Margin="4"
+                            IsChecked="{Binding IsPage2}"
+                            Command="{Binding GoToPage2}">
+                            <TextBlock
+                                Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                FontSize="18">
+                                Объединение фрагметов
+                            </TextBlock>
+                        </RadioButton>
+                    
+                        <RadioButton
+                            Style="{StaticResource MaterialDesignTabRadioButton}"
+                            Margin="4"
+                            IsChecked="{Binding IsOptionsPage}"
+                            Command="{Binding GoToOptions}">
+                            <TextBlock
+                                Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                FontSize="18">
+                                Настройки
+                            </TextBlock>
+                        </RadioButton>
+
+                        <Button 
+                            Height="30"
+                            Padding="5"
+                            Margin="5"
+                            Visibility="Collapsed"
+                            Content="PrintDebugInfo"
+                            Style="{StaticResource MaterialDesignRaisedAccentButton}"
+                            Command="{Binding PrintDebugInfo}"/>
                 </StackPanel>
             </materialDesign:ColorZone>
             
             <Grid Grid.Row="1" 
                   Visibility="{Binding IsPage1, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" 
-                  IsEnabled="{Binding PageOneViewModel.IsNotInProgress}" d:IsHidden="True">
+                  IsEnabled="{Binding PageOneViewModel.IsNotInProgress}">
                 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="14*"/>
@@ -92,29 +94,37 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <materialDesign:ColorZone Grid.Row="0" 
-                                                      Mode="PrimaryDark"
-                                                      Padding="10"
-                                                      CornerRadius="5">
+                            <StackPanel Margin="10">
                                 <DockPanel>
                                     <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                                VerticalAlignment="Center">
-                                        Current project:
+                                        Текущий проект:
                                     </TextBlock>
                                     
-                                    <materialDesign:ColorZone Mode="Standard" 
-                                                              Padding="8 4 8 4"
+                                    <materialDesign:ColorZone Padding="8 4 8 4"
                                                               CornerRadius="4"
-                                                              Margin="14 0 0 0">
+                                                              Margin="14 0 0 0"
+                                                              Visibility="{Binding IsProjectLoaded, Converter={x:Static converters:InvertedBooleanToVisibilityConverter.Instance}}">
                                         <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}"
-                                                 materialDesign:HintAssist.Hint="Project name"
+                                                 materialDesign:HintAssist.Hint="Имя проекта"
                                                  materialDesign:TextFieldAssist.TextBoxViewMargin="1 0 1 0"
                                                  materialDesign:HintAssist.FloatingScale="0.50"
-                                                 FontSize="20" 
+                                                 FontSize="20"
                                                  MaxWidth="250"/>
                                     </materialDesign:ColorZone>
                                     
-                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}"
+                                               FontSize="20"
+                                               VerticalAlignment="Center"
+                                               MaxWidth="250"
+                                               Padding="8 4 8 4"
+                                               Margin="14 0 0 0"
+                                               Visibility="{Binding IsProjectLoaded, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}"/>
+                                    
+                                    <StackPanel DockPanel.Dock="Right" 
+                                                Orientation="Horizontal" 
+                                                HorizontalAlignment="Right"
+                                                Visibility="{Binding IsProjectLoaded, Converter={x:Static converters:InvertedBooleanToVisibilityConverter.Instance}}">
                                         <Button
                                             Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                             ToolTip="New Project"
@@ -145,14 +155,31 @@
                                                 Width="24" />
                                         </Button>
                                     </StackPanel>
+                                    
+                                    <StackPanel DockPanel.Dock="Right"
+                                                HorizontalAlignment="Right"
+                                                Visibility="{Binding IsProjectLoaded, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}">
+                                        <Button
+                                            Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                            ToolTip="Close Project"
+                                            Command="{Binding CloseProject}">
+                                            <materialDesign:PackIcon
+                                                Kind="WindowClose"
+                                                Height="24"
+                                                Width="24" />
+                                        </Button>
+                                    </StackPanel>
                                 </DockPanel>
-                            </materialDesign:ColorZone>
+                                <Separator Style="{DynamicResource MaterialDesignSeparator}"
+                                           Background="{DynamicResource PrimaryHueMidBrush}" />
+                            </StackPanel>
                             
                             <StackPanel Grid.Row="1">
                                 <ListBox ItemsSource="{Binding ProjectsList}" Name="ProjectListBox" 
                                          Padding="5" 
                                          Margin="20,5,5,5"  
-                                         MaxHeight="160"
+                                         MaxHeight="120"
+                                         IsEnabled="{Binding IsProjectNotLoaded}"
                                          HorizontalAlignment="Stretch">
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="SelectionChanged">
@@ -174,14 +201,14 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <materialDesign:ColorZone Grid.Row="0" 
-                                                      Mode="PrimaryDark"
-                                                      Padding="10"
-                                                      CornerRadius="5">
+                            
+                            <StackPanel Margin="10">
                                 <TextBlock
                                     Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                     Text="Источник данных"/>
-                            </materialDesign:ColorZone>
+                                <Separator Style="{DynamicResource MaterialDesignSeparator}"
+                                           Background="{DynamicResource PrimaryHueMidBrush}"/>
+                            </StackPanel>
                             
                             <StackPanel Grid.Row="1">
                                 <StackPanel Orientation="Horizontal" 
@@ -241,14 +268,14 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <materialDesign:ColorZone Grid.Row="0" 
-                                                      Mode="PrimaryDark"
-                                                      Padding="10"
-                                                      CornerRadius="5">
+                            
+                            <StackPanel Margin="10">
                                 <TextBlock
                                     Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                     Text="Папка в которой будут находится видеозаписи"/>
-                            </materialDesign:ColorZone>
+                                <Separator Style="{DynamicResource MaterialDesignSeparator}"
+                                           Background="{DynamicResource PrimaryHueMidBrush}"/>
+                            </StackPanel>
                             
                             <Grid Grid.Row="1">
                                 <Grid.ColumnDefinitions>
@@ -281,10 +308,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <materialDesign:ColorZone Grid.Row="0" 
-                                                      Mode="PrimaryDark"
-                                                      Padding="10"
-                                                      CornerRadius="5">
+                            <StackPanel Margin="10">
                                 <DockPanel>
                                     <ToggleButton DockPanel.Dock="Right" 
                                                   Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
@@ -296,7 +320,10 @@
                                         Фильтрация по времени
                                     </TextBlock>
                                 </DockPanel>
-                            </materialDesign:ColorZone>
+                                <Separator Style="{DynamicResource MaterialDesignSeparator}"
+                                           Background="{DynamicResource PrimaryHueMidBrush}"/>
+                                
+                            </StackPanel>
                             
                             <StackPanel Grid.Row="1" Visibility="{Binding IsNeedTimeCheck, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}">
                                 <TextBlock Text="Дата начала" Margin="20,20,0,0" FontSize="14" FontWeight="DemiBold"/>
@@ -357,14 +384,15 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions> 
-                            <materialDesign:ColorZone Grid.Row="0" 
-                                                      Mode="PrimaryDark"
-                                                      Padding="10"
-                                                      CornerRadius="5">
+                            
+                            <StackPanel Margin="10">
                                 <TextBlock
                                     Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                     Text="Результат сканирования"/>
-                            </materialDesign:ColorZone>
+                                <Separator Style="{DynamicResource MaterialDesignSeparator}"
+                                           Background="{DynamicResource PrimaryHueMidBrush}"/>
+                            </StackPanel>
+                            
                             <StackPanel Grid.Row="1"  DataContext="{Binding ScanInfo}" Margin="5,10,0,0">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock
@@ -456,7 +484,7 @@
 
             </Grid>
 
-            <Grid Grid.Row="1" Visibility="{Binding IsPage2, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding IsNotInProgress}">
+            <Grid Grid.Row="1" Visibility="{Binding IsPage2, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" IsEnabled="{Binding IsNotInProgress}" d:IsHidden="True">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -511,56 +539,60 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TreeView Grid.Column="0" Margin="20,10,10,10" MinWidth="300"
-                          ItemsSource="{Binding Items}"
-                          AllowDrop="True"
-                          Name="FilesView">
-                        <TreeView.ItemContainerStyle>
-                            <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource MaterialDesignTreeViewItem}">
-                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-                            </Style>
+                    
+                    <materialDesign:Card Grid.Column="0" Margin="20,10,0,10">
+                        <TreeView MinWidth="300"
+                                  ItemsSource="{Binding Items}"
+                                  AllowDrop="True"
+                                  Name="FilesView">
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource MaterialDesignTreeViewItem}">
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                </Style>
 
-                        </TreeView.ItemContainerStyle>
+                            </TreeView.ItemContainerStyle>
 
-                        <TreeView.ItemTemplate>
-                            <HierarchicalDataTemplate ItemsSource="{Binding Childs}">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="{Binding Type, Converter={x:Static converters:DirectoryItemTypeToIconConverter.Instance}}"
-                                                             Height="16"
-                                                             Width="16"
-                                                             Margin="3"/>
-                                    <TextBlock VerticalAlignment="Center" Text="{Binding Name}" AllowDrop="True"/>
-                                    <!--<i:Interaction.Triggers>
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Childs}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="{Binding Type, Converter={x:Static converters:DirectoryItemTypeToIconConverter.Instance}}"
+                                                                 Height="16"
+                                                                 Width="16"
+                                                                 Margin="3"/>
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" AllowDrop="True"/>
+                                        <!--<i:Interaction.Triggers>
 
-                                        ~1~ <i:EventTrigger EventName="DragOver"> @1@
-                                        ~1~     <i:InvokeCommandAction Command="{Binding DragEnter}"/> @1@
-                                        ~1~ </i:EventTrigger> @1@
+                                            ~1~ <i:EventTrigger EventName="DragOver"> @1@
+                                            ~1~     <i:InvokeCommandAction Command="{Binding DragEnter}"/> @1@
+                                            ~1~ </i:EventTrigger> @1@
 
-                                        ~1~ <i:EventTrigger EventName="Drop"> @1@
-                                        ~1~     <i:InvokeCommandAction Command="{Binding Drop}"/> @1@
-                                        ~1~ </i:EventTrigger> @1@
+                                            ~1~ <i:EventTrigger EventName="Drop"> @1@
+                                            ~1~     <i:InvokeCommandAction Command="{Binding Drop}"/> @1@
+                                            ~1~ </i:EventTrigger> @1@
 
-                                        ~1~ <i:EventTrigger EventName="MouseMove"> @1@
-                                        ~1~     <i:InvokeCommandAction Command="{Binding MouseMove}"/> @1@
-                                        ~1~ </i:EventTrigger> @1@
+                                            ~1~ <i:EventTrigger EventName="MouseMove"> @1@
+                                            ~1~     <i:InvokeCommandAction Command="{Binding MouseMove}"/> @1@
+                                            ~1~ </i:EventTrigger> @1@
 
-                                        ~1~ <i:EventTrigger EventName="MouseDoubleClick"> @1@
-                                        ~1~     <i:InvokeCommandAction Command="{Binding DoubleClick}"/> @1@
-                                        ~1~ </i:EventTrigger> @1@
+                                            ~1~ <i:EventTrigger EventName="MouseDoubleClick"> @1@
+                                            ~1~     <i:InvokeCommandAction Command="{Binding DoubleClick}"/> @1@
+                                            ~1~ </i:EventTrigger> @1@
 
-                                        <i:EventTrigger EventName="MouseLeftButtonDown">
-                                            <i:InvokeCommandAction Command="{Binding MouseLeftButtonDown}"/>
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>-->
-                                </StackPanel>
-                            </HierarchicalDataTemplate>
-                        </TreeView.ItemTemplate>
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="SelectedItemChanged">
-                                <i:InvokeCommandAction Command="{Binding OnSelectedItemChange}" CommandParameter="{Binding ElementName=FilesView, Path=SelectedItem}"/>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </TreeView>
+                                            <i:EventTrigger EventName="MouseLeftButtonDown">
+                                                <i:InvokeCommandAction Command="{Binding MouseLeftButtonDown}"/>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>-->
+                                    </StackPanel>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectedItemChanged">
+                                    <i:InvokeCommandAction Command="{Binding OnSelectedItemChange}" CommandParameter="{Binding ElementName=FilesView, Path=SelectedItem}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </TreeView>
+                    </materialDesign:Card>
+                    
                     
                     <Border
                         Grid.Column="1"
@@ -580,18 +612,9 @@
 
             <Grid Grid.Row="1" Visibility="{Binding IsOptionsPage, Converter={x:Static converters:BooleanToVisibilityConverter.Instance}}" d:IsHidden="True">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="2*"/>
-                    <RowDefinition Height="20*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                
-                <StackPanel Grid.Row="0">
-                    <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}" 
-                               Text="Настройки" 
-                               TextAlignment="Center" 
-                               HorizontalAlignment="Center" 
-                               Margin="0,10,0,5"/>
-                    <Separator/>
-                </StackPanel>
                 
                 <WrapPanel Grid.Row="1">
                     <StackPanel>
@@ -601,15 +624,14 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <materialDesign:ColorZone Grid.Row="0" 
-                                                          Mode="PrimaryDark"
-                                                          Padding="10"
-                                                          CornerRadius="5">
+                                
+                                <StackPanel Margin="10">
                                     <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                               VerticalAlignment="Center">
-                                        Путь к python.exe
-                                    </TextBlock>
-                                </materialDesign:ColorZone>
+                                               VerticalAlignment="Center"
+                                               Text="Путь к python.exe"/>
+                                    <Separator Style="{DynamicResource MaterialDesignSeparator}"
+                                               Background="{DynamicResource PrimaryHueMidBrush}"/>
+                                </StackPanel>
                                 
                                 <Grid Grid.Row="1">
                                     <Grid.ColumnDefinitions>
@@ -642,15 +664,14 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <materialDesign:ColorZone Grid.Row="0" 
-                                                          Mode="PrimaryDark"
-                                                          Padding="10"
-                                                          CornerRadius="5">
+                                
+                                <StackPanel Margin="10">
                                     <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                               VerticalAlignment="Center">
-                                        Путь к скрипту
-                                    </TextBlock>
-                                </materialDesign:ColorZone>
+                                               VerticalAlignment="Center"
+                                               Text="Путь к скрипту"/>
+                                    <Separator Style="{DynamicResource MaterialDesignSeparator}"
+                                               Background="{DynamicResource PrimaryHueMidBrush}"/>
+                                </StackPanel>
                                 
                                 <Grid Grid.Row="1">
                                     <Grid.ColumnDefinitions>
@@ -683,15 +704,14 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <materialDesign:ColorZone Grid.Row="0" 
-                                                          Mode="PrimaryDark"
-                                                          Padding="10"
-                                                          CornerRadius="5">
+                                
+                                <StackPanel Margin="10">
                                     <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                               VerticalAlignment="Center">
-                                        Путь к файлу результата
-                                    </TextBlock>
-                                </materialDesign:ColorZone>
+                                               VerticalAlignment="Center"
+                                               Text="Путь к файлу результата"/>
+                                    <Separator Style="{DynamicResource MaterialDesignSeparator}"
+                                               Background="{DynamicResource PrimaryHueMidBrush}"/>
+                                </StackPanel>
                                 
                                 <Grid Grid.Row="1">
                                     <Grid.ColumnDefinitions>
@@ -716,6 +736,21 @@
                                             Margin="0,16,10,5"/>
                                 </Grid>
                             </Grid>
+                        </materialDesign:Card>
+                        
+                        <materialDesign:Card Padding="10" Margin="20,5,10,8">
+                            <StackPanel Orientation="Horizontal" Margin="5">
+                                <TextBlock
+                                    Style="{DynamicResource MaterialDesignBody1TextBlock}"
+                                    Text="Темная схема"/>
+                                <ToggleButton
+                                    Style="{StaticResource MaterialDesignSwitchLightToggleButton}"
+                                    ToolTip="MaterialDesignSwitchLightToggleButton"
+                                    Command="{Binding ChangeTheme}"
+                                    Margin="16,0,0,0"
+                                    IsChecked="{Binding IsDarkTheme}" />
+                            </StackPanel>
+                            
                         </materialDesign:Card>
                     </StackPanel>
                 </WrapPanel>

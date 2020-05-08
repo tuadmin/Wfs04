@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Windows.Media;
+using MaterialDesignColors;
+using MaterialDesignThemes.Wpf;
 
 namespace WpfApp1.ViewModels.MainWindowViewModel
 {
@@ -7,11 +10,13 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         private bool _isPage1 = true;
         private bool _isPage2;
         private bool _isOptionsPage;
+        private bool _isDarkTheme = true;
 
         private RelayCommand _goToPage1;
         private RelayCommand _goToPage2;
         private RelayCommand _goToOptions;
         private RelayCommand _printDebugInfo;
+        private RelayCommand _changeTheme;
 
         public PageOneViewModel PageOneViewModel { get; }
         public PageTwoViewModel PageTwoViewModel { get; }
@@ -51,7 +56,16 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                 OnPropertyChanged(nameof(IsOptionsPage));
             }
         }
-        
+
+        public bool IsDarkTheme
+        {
+            get => _isDarkTheme;
+            set
+            {
+                _isDarkTheme = value;
+                OnPropertyChanged(nameof(IsDarkTheme));
+            }
+        }
 
         public RelayCommand GoToPage1
         {
@@ -107,5 +121,20 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
+        public RelayCommand ChangeTheme
+        {
+            get
+            {
+                return _changeTheme ??= new RelayCommand(_ =>
+                {
+                    var paletteHelper = new PaletteHelper();
+                    var theme = paletteHelper.GetTheme();
+
+                    theme.SetBaseTheme(_isDarkTheme ? Theme.Dark : Theme.Light);
+                    
+                    paletteHelper.SetTheme(theme);
+                }, null);
+            }
+        }
     }
 }

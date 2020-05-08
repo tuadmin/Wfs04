@@ -9,7 +9,14 @@
              xmlns:converters="clr-namespace:WpfApp1.Converters"
              xmlns:local="clr-namespace:WpfApp1.Components.ConfirmDialog"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300"
+             TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+             TextElement.FontWeight="Regular"
+             TextElement.FontSize="13"
+             TextOptions.TextFormattingMode="Ideal" 
+             TextOptions.TextRenderingMode="Auto"        
+             Background="{DynamicResource MaterialDesignPaper}"
+             FontFamily="{materialDesign:MaterialDesignFont}">
     <Grid Margin="16" MinHeight="260" MinWidth="360">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>

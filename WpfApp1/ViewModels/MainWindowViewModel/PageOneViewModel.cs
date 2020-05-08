@@ -23,6 +23,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         private bool _isInProgress;
         private bool _isNewProject;
         private bool _isNeedSecondProgressBar;
+        private bool _isProjectLoaded;
         
         private DateTime _startDate = new DateTime(2020, 01, 30, 4, 30, 0);
         private int _startTimeHours = 4;
@@ -64,6 +65,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
         private RelayCommand _createNewProject;
         private RelayCommand _loadProject;
         private RelayCommand _deleteProject;
+        private RelayCommand _closeProject;
         public List<PhysicalDiskItem> DiskList { get; }
 
 
@@ -215,6 +217,19 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             }
         }
 
+        public bool IsProjectLoaded
+        {
+            get => _isProjectLoaded;
+            set
+            {
+                _isProjectLoaded = value;
+                OnPropertyChanged(nameof(IsProjectLoaded));
+                OnPropertyChanged(nameof(IsProjectNotLoaded));
+            }
+        }
+
+        public bool IsProjectNotLoaded => !_isProjectLoaded;
+
         public bool IsNotInProgress => !_isInProgress;
         public bool IsInProgress
         {
@@ -223,6 +238,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
             {
                 _isInProgress = value;
                 OnPropertyChanged(nameof(IsInProgress));
+                OnPropertyChanged(nameof(IsNotInProgress));
             }
         }
 
@@ -375,6 +391,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                         }
                     }
 
+                    IsProjectLoaded = true;
                     _isNewProject = true;
                     DatabaseService.CreateNewProjectTable(ProjectName);
                     VideoList = new List<VideoItem>();
@@ -396,6 +413,7 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                         return;
                     }
 
+                    IsProjectLoaded = true;
                     _isNewProject = false;
                     ScanInfo = DatabaseService.GetScanInfo(ProjectName);
                     VideoList = DatabaseService.GetDataFromProjectTable(ProjectName);
@@ -416,6 +434,19 @@ namespace WpfApp1.ViewModels.MainWindowViewModel
                     DatabaseService.DeleteProjectTable(ProjectName);
                     ProjectsList = DatabaseService.GetExistingProjects();
                 }, _ => !string.IsNullOrWhiteSpace(ProjectName));
+            }
+        }
+
+        public RelayCommand CloseProject
+        {
+            get
+            {
+                return _closeProject ??= new RelayCommand(_ =>
+                {
+                    IsProjectLoaded = false;
+                    ScanInfo = null;
+                    VideoList = null;
+                }, null);
             }
         }
 
